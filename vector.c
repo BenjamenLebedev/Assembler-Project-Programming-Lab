@@ -13,18 +13,18 @@ struct vector {
 };
 
 Vector new_vector(void * (*ctor)(const void *copy),void (*dtor)(void *item)) {
-    Vector new = calloc(1,sizeof(struct vector));
-    if(new == NULL)
+    Vector newVec = (vector*) calloc(1,sizeof(struct vector));
+    if(newVec == NULL)
         return NULL;
-    new->pointer_count = VECTOR_BEGIN_SIZE;
-    new->items = calloc(VECTOR_BEGIN_SIZE,sizeof(void*));
-    if(new->items == NULL) {
-        free(new);
+    newVec->pointer_count = VECTOR_BEGIN_SIZE;
+    newVec->items = (void**) calloc(VECTOR_BEGIN_SIZE,sizeof(void*));
+    if(newVec->items == NULL) {
+        free(newVec);
         return NULL;
     }
-    new->ctor = ctor;
-    new->dtor = dtor;
-    return new;
+    newVec->ctor = ctor;
+    newVec->dtor = dtor;
+    return newVec;
 }
 
 void * vector_insert(Vector v,const void * copy_item) {
@@ -32,7 +32,7 @@ void * vector_insert(Vector v,const void * copy_item) {
     void ** temp;
     if(v->item_count == v->pointer_count) {
         v->pointer_count *=2;
-        temp = realloc(v->items,v->pointer_count * sizeof(void *));
+        temp = (void**) realloc(v->items,v->pointer_count * sizeof(void *));
         if(temp == NULL) {
             v->pointer_count /= 2;
             return NULL;
