@@ -13,7 +13,7 @@ struct vector {
 };
 
 Vector new_vector(void * (*ctor)(const void *copy),void (*dtor)(void *item)) {
-    Vector newVec = (vector*) calloc(1,sizeof(struct vector));
+    Vector newVec = (Vector) calloc(1,sizeof(struct vector));
     if(newVec == NULL)
         return NULL;
     newVec->pointer_count = VECTOR_BEGIN_SIZE;
