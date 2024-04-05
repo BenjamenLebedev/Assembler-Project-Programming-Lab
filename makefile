@@ -4,7 +4,7 @@ CFLAGS = -Wall -ansi -pedantic -g
 FOLDERNAME = Assembler-Project
 SRCS = ${shell ls ./Source_Files/*.c}
 OBJS = $(SRCS:.c=.o)
-LIB = ../${FOLDERNAME}/Header_Files/*.h 
+LIB = ./Header_Files/*.h 
 # Executable
 TARGET = mid
 
