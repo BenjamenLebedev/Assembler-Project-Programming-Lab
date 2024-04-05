@@ -309,7 +309,7 @@ int check_string(frontend_ast *ast, char *line){
 
     /*the only way the string is legal is if we went through it all
     and we got to the middle of the string without errors*/
-    if(i != j){
+    if(!(i == j || i == j + 1)){
         strcpy((*ast).errors, "Illegal string in .string directive\n");
         return 0;
     }
