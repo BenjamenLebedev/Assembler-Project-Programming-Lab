@@ -129,7 +129,7 @@ frontend_ast frontend(char* line){
     if((*ast).typeofLine != error || isEmptyString((*ast).errors)) (*ast).errors = NULL;
 
     /*print ast for debug*/
-    print_ast(ast);
+    /*print_ast(ast);*/
 
     free(saveptr);
     return (*ast);
@@ -146,6 +146,7 @@ void print_ast(frontend_ast *ast){
     if((*ast).typeofLine == empty)      printf(" (empty) \n");
     else if((*ast).typeofLine == inst)  printf(" (inst) \n");
     else if((*ast).typeofLine == dir)   printf(" (dir) \n");
+    else if((*ast).typeofLine == define)printf(" (define) \n");
     else if((*ast).typeofLine == error) printf(" (error) \n");
 
     /* inst_ops */
@@ -197,7 +198,7 @@ void print_ast(frontend_ast *ast){
     }
 
     /*dir_ops*/
-    else if((*ast).typeofLine == dir){
+    else if((*ast).typeofLine == dir || (*ast).typeofLine == define){
         printf("The AST operation_code.dir_code is: %d",  (*ast).operation_code.dir_code);
         if((*ast).operation_code.dir_code == dir_entry)       printf(" [dir_entry]\n");
         else if((*ast).operation_code.dir_code == dir_extern) printf(" [dir_extern]\n");
@@ -232,7 +233,6 @@ void print_ast(frontend_ast *ast){
         }
     }
 }
-
 
 char *check_legal_label(frontend_ast *ast, char *str,int arg,char **saveptr){
 
@@ -299,18 +299,6 @@ char *check_legal_label(frontend_ast *ast, char *str,int arg,char **saveptr){
 /**************************************************************************************/
 /**************************************************************************************/
 
-int find_dir(char *str){
-    int i;
-    char *ptr;
-
-    ptr = str + 1; /*skipping the point before the directive word*/
-    for(i = 0; i < DIR_NUM && str[0] == '.'; i++){
-        /*if an instance of a directive word was found*/
-        if(strstr(ptr,dir_list[i])) return 1; 
-    }
-    return 0;
-}
-
 int check_directive(frontend_ast *ast, char *line,char **saveptr){
     char *token;
     int i,j,check_args;
@@ -327,7 +315,8 @@ int check_directive(frontend_ast *ast, char *line,char **saveptr){
     /* Identifying the directive and assigning the correct operation code into the AST*/
     i = is_dir(token);
     if(i >= 0){ /*only assigning directive type if alegal directive was found*/
-        (*ast).typeofLine = dir;
+        if(i == 4) (*ast).typeofLine = define; /*since define is in on it's own*/
+        else (*ast).typeofLine = dir;
         assign_ast_dir_inst(ast,dir,i);
     }
     else if(i == -1){
@@ -471,7 +460,6 @@ int check_data_dir(frontend_ast *ast, char *line, char **saveptr){
         if(++i > 0 && strchr(token_ind,',')) token_ind += (int)strlen(token_backup) + 1;
         token = my_strtok(NULL, ",", saveptr);
     }
-
     return 1;
 }
 
@@ -607,6 +595,17 @@ int check_define(frontend_ast *ast, char *line, char **saveptr){
 /**************************************************************************************/
 /**************************************************************************************/
 
+int find_dir(char *str){
+    int i;
+    char *ptr;
+
+    ptr = str + 1; /*skipping the point before the directive word*/
+    for(i = 0; i < DIR_NUM && str[0] == '.'; i++){
+        /*if an instance of a directive word was found*/
+        if(strstr(ptr,dir_list[i])) return 1; 
+    }
+    return 0;
+}
 
 int check_instruction(frontend_ast *ast, char *line, char **saveptr){
     char *token;
@@ -962,7 +961,7 @@ void assign_ast_dir_inst(frontend_ast *ast,line_type type,int i){
             break;
         }
     }
-    else if(type == dir){
+    else if(type == dir || type == define){
         switch (i)
         {
         case 0:
