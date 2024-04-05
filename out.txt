@@ -1,0 +1,10 @@
+The AST errors are: 
+The AST label is: MANIUK
+The AST typeofLine is: 1  (dir) 
+The AST operation_code.dir_code is: 3 [dir_string]
+The AST operands.dir_ops.num_count is: 1
+The AST operands.dir_ops.data_dir[0].type_data is: 2 (string)
+The AST operands.dir_ops.data_dir[0].data_option.string is: abcdefg"sda"asdsa
+The AST operands.dir_ops.data_dir[0].offset.label is: (null)
+The AST operands.dir_ops.data_dir[0].offset.num is: -1
+
