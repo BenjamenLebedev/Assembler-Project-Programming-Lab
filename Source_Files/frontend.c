@@ -172,6 +172,13 @@ void print_ast(frontend_ast *ast){
         else if((*ast).operation_code.inst_code == op_hlt) printf(" (hlt)\n");
 
         for(i = 0; i < 2; i++){
+            printf("The AST operands.inst_ops[%d].address_of_op is: %d", i, \
+            (*ast).operands.inst_ops[i].address_of_op);
+            if((*ast).operands.inst_ops[i].address_of_op == const_num)         printf(" (const_num)\n");
+            else if((*ast).operands.inst_ops[i].address_of_op == label)        printf(" (label)\n");
+            else if((*ast).operands.inst_ops[i].address_of_op == label_offset) printf(" (label_offset)\n");
+            else if((*ast).operands.inst_ops[i].address_of_op == reg)          printf(" (reg)\n");
+            else if((*ast).operands.inst_ops[i].address_of_op == none)         printf(" (none)\n");
             printf("The AST operands.inst_ops[%d].reg_num is: %d\n", i, (*ast).operands.inst_ops[i].reg_num);
             printf("The AST operands.inst_ops[%d].data_inst.type_data is: %d",i, \
             (*ast).operands.inst_ops[i].data_inst.type_data);
@@ -706,7 +713,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum, char **save
         check_offset = check_label_offset(ast, token);
         check_reg = is_reg(token);
         
-        
+
         /*address none means it's not a legal operand for the # operand*/
         if(operand_type_0.type != none_0){ 
             /*case of const number and the subcases that follow*/
