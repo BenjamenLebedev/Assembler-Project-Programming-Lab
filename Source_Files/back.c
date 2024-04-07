@@ -46,6 +46,7 @@ void convertToSecretBase(int number, char secretBase[]) {
 int make_ob_file(const struct translation_unit *translation_unit, char *FileName){
     int i;
     char secretBase[8];
+    int is_error = FALSE;
 
     char * file_ob_name;
     FILE *file_ob;
@@ -60,7 +61,7 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
         for(i = 0; i<translation_unit->IC; i++){
             convertToSecretBase(translation_unit->code_image[i], secretBase);
             printf("IC: %s\n", secretBase);
-             fprintf(file_ob, "%s\n", secretBase);
+            fprintf(file_ob, "%s\n", secretBase);
         }
 
         for(i = 0; i<translation_unit->DC; i++){
@@ -70,11 +71,11 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
         }
     }
     else{
-        return 0;
+        is_error = TRUE;
     }
     fclose(file_ob);
     free(file_ob_name);
 
-    return 1;
+    return is_error;
 
 }

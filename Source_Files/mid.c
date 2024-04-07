@@ -1,11 +1,6 @@
 /*directive can have STRING[2] or STRING[len] but not STRING[LOOP[2]]*/
 
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h> 
-#include <string.h>
-#include <stdlib.h> 
-#include "../Header_Files/vector.h"
+ #include "../Header_Files/vector.h"
 #include "../Header_Files/mid.h"
 #include "../Header_Files/global_var.h"
 #include "../Header_Files/t_unit.h"
@@ -317,6 +312,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
     int i, is_op_source;
     char line[81];
     int line_counter = 1;
+    int is_error = FALSE;
  /*    int ic = 100;
     int dc = 0;
     int is_error = FALSE;
@@ -447,6 +443,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
                         }
                         /*incase that symbol was used but undefined*/
                         else{
+                            is_error = TRUE;
                             printf("********* error in file: %s line: %d, undefined symbol: %s\n", amFileName, line_counter, ast.label);
                         }
                     }
@@ -467,10 +464,16 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
 
         }
         line_counter++;
+        /*need to delete before sending.*/
+        /*from here*/
+        add_to_code_image(translation_unit,0);
+        translation_unit->IC++;
+        /*to here*/
+
     }
 
     printf("********* Exiting second pass\n");
     free(extern1);
-    return 0; 
+    return is_error; 
 }
 

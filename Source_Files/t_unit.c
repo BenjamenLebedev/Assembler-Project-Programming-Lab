@@ -96,8 +96,13 @@ void print_code_image(struct translation_unit *unit) {
 
     printf("Code Image:\n");
     for (i = 0; i < unit->IC; i++) {
-        printBinary14(unit->code_image[i]);
-        printf("%d\n", unit->code_image[i]);
+        if(unit->code_image[i] == 0){
+            printf("--\n");
+        }
+        else{
+            printBinary14(unit->code_image[i]);
+            printf("%d\n", unit->code_image[i]);
+        }    
     }
     printf("\n");
 }
