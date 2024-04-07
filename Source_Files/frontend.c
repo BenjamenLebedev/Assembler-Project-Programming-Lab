@@ -547,7 +547,6 @@ int check_string(frontend_ast *ast, char *line){
     return 1;
 }
 
-
 int check_define(frontend_ast *ast, char *line, char **saveptr){
 
     char *token,*label;
@@ -599,7 +598,6 @@ int check_define(frontend_ast *ast, char *line, char **saveptr){
         (*ast).operands.dir_ops.data_dir[index++].data_option.num = num;
         (*ast).operands.dir_ops.num_count = index;
     }
-    
     return 1;
 }
 
@@ -608,7 +606,6 @@ int check_define(frontend_ast *ast, char *line, char **saveptr){
 /****************************Functions for instructions********************************/
 /**************************************************************************************/
 /**************************************************************************************/
-
 
 
 int check_instruction(frontend_ast *ast, char *line, char **saveptr){
@@ -796,7 +793,6 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum, char **save
             return 0;
         }
     }
-
     return 1;
 }
 
@@ -856,6 +852,7 @@ address_0_op address_type_0(frontend_ast *ast,char *str, char **saveptr){
 /************************************************************************************/
 /************************************************************************************/
 /************************************************************************************/
+
 
 int is_reg(char* str){
 
