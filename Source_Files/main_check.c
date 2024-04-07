@@ -3,10 +3,10 @@
 
 void print_ast(frontend_ast *ast);
    
-int mainss(){
+int main(){
 
     frontend_ast *ast;
-    char *line = "STR:   mov 2,r2 \n";
+    char *line = "STR: rts  \n";
 
     /*“abcdef”*/
 
