@@ -1,3 +1,5 @@
+.entry LIST
+.extern W
 .define sz = 2
 MAIN:   mov r3, LIST[sz]
 LOOP:   jmp L1
@@ -13,6 +15,6 @@ L1:     inc K
         bne LOOP
 END:    hlt
 .define len = 4
-STR:    .string “abcdef”
+STR:    .string "abcdef"
 LIST:   .data 6, -9, len
 K:      .data 22 
