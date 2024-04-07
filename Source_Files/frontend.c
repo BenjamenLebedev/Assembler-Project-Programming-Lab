@@ -78,7 +78,9 @@ frontend_ast frontend(char* line){
     /* found ; signifying it's a possible comment line*/
     if(strchr(line, ';')){
         if(line[0] == ';'){
+            (*ast).errors = NULL;
             (*ast).typeofLine = empty;
+            print_ast(ast);
             return (*ast);
         }
         else{
@@ -129,7 +131,7 @@ frontend_ast frontend(char* line){
     if((*ast).typeofLine != error || isEmptyString((*ast).errors)) (*ast).errors = NULL;
 
     /*print ast for debug*/
-    /*print_ast(ast);*/
+    print_ast(ast);
 
     free(saveptr);
     return (*ast);
@@ -298,6 +300,18 @@ char *check_legal_label(frontend_ast *ast, char *str,int arg,char **saveptr){
 /*****************************Functions for directives*********************************/
 /**************************************************************************************/
 /**************************************************************************************/
+
+int find_dir(char *str){
+    int i;
+    char *ptr;
+
+    ptr = str + 1; /*skipping the point before the directive word*/
+    for(i = 0; i < DIR_NUM && str[0] == '.'; i++){
+        /*if an instance of a directive word was found*/
+        if(strstr(ptr,dir_list[i])) return 1; 
+    }
+    return 0;
+}
 
 int check_directive(frontend_ast *ast, char *line,char **saveptr){
     char *token;
@@ -595,17 +609,7 @@ int check_define(frontend_ast *ast, char *line, char **saveptr){
 /**************************************************************************************/
 /**************************************************************************************/
 
-int find_dir(char *str){
-    int i;
-    char *ptr;
 
-    ptr = str + 1; /*skipping the point before the directive word*/
-    for(i = 0; i < DIR_NUM && str[0] == '.'; i++){
-        /*if an instance of a directive word was found*/
-        if(strstr(ptr,dir_list[i])) return 1; 
-    }
-    return 0;
-}
 
 int check_instruction(frontend_ast *ast, char *line, char **saveptr){
     char *token;
