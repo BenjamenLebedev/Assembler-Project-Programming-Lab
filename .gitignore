@@ -3,6 +3,9 @@ frontend_ex
 /draft
 mid
 out.txt
+# text files
+*.txt
+*.am
 # Prerequisites
 *.d
 
@@ -11,6 +14,7 @@ out.txt
 *.ko
 *.obj
 *.elf
+*.ob
 
 # Linker output
 *.ilk
