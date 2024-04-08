@@ -125,7 +125,6 @@ typedef struct dir_op{
     int num_count; /* the amount of operands */
 } dir_operands;
 
-
 /* The structure of the AST itself */
 typedef struct frontend{
     char *errors; /*NULL if no errors are found*/

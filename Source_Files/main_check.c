@@ -3,7 +3,7 @@
 
 void print_ast(frontend_ast *ast);
    
-int main(){
+int mainss(){
 
     frontend_ast *ast;
     char *line = "STR: rts  \n";
