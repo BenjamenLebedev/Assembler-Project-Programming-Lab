@@ -18,7 +18,7 @@ int mainss(){
     *ast = frontend(line);
 
     /*print_ast(ast);*/
-    
+
     frontend_free(ast);
     return 0;
 }
