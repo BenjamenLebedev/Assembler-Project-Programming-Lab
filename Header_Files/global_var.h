@@ -34,6 +34,9 @@ enum {
 /* the number of directives */
 #define DIR_NUM 5
 
+/*The starting value of the instruction counter*/
+#define IC_START 100
+
 /* the maximal and minimal values of integer in the instructions for the fictional machine 
 in the instructions we have the first 2 bits reserved (A.R.E) so here we go with only 12 bits
 meaning 12-1 = 14-3 --> we shift only WORD_LEN_AST-1 since 1 has only WORD_LEN_AST-1 zero bits*/
