@@ -86,8 +86,8 @@ void add_array_to_data_image(struct translation_unit *unit, int *array, size_t a
 /***********************************************************************************************************************/
 int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE *amFile) {
     int i,len;
-    char line[81];
-    int ic = 100;
+    char line[MAX_LINE_LEN];
+    int ic = IC_START;
     int dc = 0;
     int is_error = FALSE;
     int line_counter = 1;
