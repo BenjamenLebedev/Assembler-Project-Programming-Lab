@@ -388,8 +388,9 @@ address_0_op address_type_0(frontend_ast *ast,char *str, char **saveptr);
  * @brief prints the AST - including all the substructures
  * 
  * @param ast the AST to be printed
+ * @param line the line of the assembly code the AST describes
  */
-void print_ast(frontend_ast *ast);
+void print_ast(frontend_ast *ast,char *line);
 
 /*************************************************************************************/
 /*************************************************************************************/
