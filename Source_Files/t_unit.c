@@ -25,7 +25,7 @@ void add_to_code_image(struct translation_unit *unit, int value) {
         printf("Error: Invalid translation unit.\n");
         return;
     }
-    if (unit->IC % 10 +1 == 1) {    
+    if (unit->IC % 10 +1 == 1) {
         int *temp = (int *)realloc(unit->code_image, (unit->IC + 10 - 1) * sizeof(int));
         printf("relocating memory in add_to_code_image func\n");
         if (temp == NULL) {
@@ -42,7 +42,7 @@ void add_to_data_image(struct translation_unit *unit, int value) {
         printf("Error: Invalid translation unit.\n");
         return;
     }
-    if (unit->DC % 10 +1== 1) {
+    if (unit->DC % 10 +1 == 1) {
         int *temp = (int *)realloc(unit->data_image, (unit->DC + 10 - 1) * sizeof(int));
         if (temp == NULL) {
             printf("Error: Memory reallocation failed for data_image.\n");
