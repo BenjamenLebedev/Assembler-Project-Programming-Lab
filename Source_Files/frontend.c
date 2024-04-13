@@ -55,10 +55,12 @@ frontend_ast frontend(char* line){
         return (*ast);
     }
 
+    
     /* removing the newline character from the end of the line*/ 
     if(line[strlen(line) - 1] == '\n'){
         copy_line = (char*) calloc(strlen(line) + 1, sizeof(char));
         if(copy_line == NULL){
+            strcpy((*ast).errors, "Memory allocation error\n");
             (*ast).typeofLine = error;
             return (*ast);
         }
@@ -80,7 +82,7 @@ frontend_ast frontend(char* line){
         if(line[0] == ';'){
             (*ast).errors = NULL;
             (*ast).typeofLine = empty;
-            print_ast(ast);
+            print_ast(ast,copy_line);
             return (*ast);
         }
         else{
@@ -131,16 +133,16 @@ frontend_ast frontend(char* line){
     if((*ast).typeofLine != error || isEmptyString((*ast).errors)) (*ast).errors = NULL;
 
     /*print ast for debug*/
-    print_ast(ast);
+    print_ast(ast,copy_line);
 
     free(saveptr);
     return (*ast);
 }
 
-void print_ast(frontend_ast *ast){
+void print_ast(frontend_ast *ast,char *line){
 
     int i;
-
+    printf("The processed line of the AST is: %s\n", line);
     if((*ast).errors) printf("The AST errors are: %s\n", (*ast).errors);
 
     printf("The AST label is: %s\n", (*ast).label);
