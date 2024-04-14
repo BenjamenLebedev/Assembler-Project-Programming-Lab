@@ -5,7 +5,7 @@
 int mainss(){
 
     frontend_ast *ast;
-    char *line = "   .define \nabcdef = 1234  \n";
+    char *line = "   MAIN:  mov r3, LIST[sz] \n";
 
     /*“abcdef”*/
 
