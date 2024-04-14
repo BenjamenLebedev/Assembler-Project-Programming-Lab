@@ -92,8 +92,8 @@ void add_array_to_data_image(struct translation_unit *unit, int *array, size_t a
 /***********************************************************************************************************************/
 int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE *amFile) {
     int i,len;
-    char line[81];
-    int ic = 100;
+    char line[MAX_LINE_LEN];
+    int ic = IC_START;
     int dc = 0;
     int is_error = FALSE;
     int line_counter = 1;
@@ -104,7 +104,6 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
     void *const *end;
     char *string1;
 
-    /* Vector symbols_vector = new_vector(symbol_ctor, symbol_dtor); */
     struct symbol *symbol;
        
 
@@ -169,7 +168,6 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         }
 
 
-            /* memcpy(translation_unit->data_image[translation_unit->DC],ast.operands.dir_ops.data_dir->data_option.num,); */
         if(ast.typeofLine == inst) {
                 ic++;
                 if(ast.operands.inst_ops[0].reg_num != -1 && ast.operands.inst_ops[1].reg_num != -1){
@@ -217,7 +215,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                 }
             } else if (!find_symbol) {
                 strcpy(symbol->symName, ast.operands.dir_ops.data_dir->data_option.label);
-                symbol->symType = ast.operation_code.dir_code;
+                symbol->symType = (symType) ast.operation_code.dir_code;
                 vector_insert(translation_unit->symbols, symbol);
             } else {
                 printf("********* label wasn't already defined\n");
@@ -238,57 +236,6 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             }
 
         }
-        /* if (ast.typeofLine == dir && ((ast.operation_code.dir_code == dir_entry) || (ast.operation_code.dir_code == dir_extern))) { */
-/*         if (ast.typeofLine == dir && ast.operation_code.dir_code <= dir_string) {
-            printf("********* printing symbols inside translation_unit:\n");
-            printf("fixing LIST1-------------------------------------------------------------------------------\n");
-            if((ast.operation_code.dir_code == dir_entry) || (ast.operation_code.dir_code == dir_extern)){
-                find_symbol = does_symbol_exist(translation_unit->symbols, ast.operands.dir_ops.data_dir->data_option.label);
-            }
-            else{
-                find_symbol = does_symbol_exist(translation_unit->symbols, ast.label);
-            }
-            printf("fixing LIST2-------------------------------------------------------------------------------\n"); */
-            /* if ((find_symbol != NULL) && (ast.operation_code.dir_code == dir_entry)) { */
-/*             if ((find_symbol != NULL) && ((ast.operation_code.dir_code == dir_data) || (ast.operation_code.dir_code == dir_string))) {
-                if (find_symbol->symType == dataSymbol) {
-                printf("fixing LIST3-------------------------------------------------------------------------------\n");    
-                    find_symbol->symType = entryDataSymbol;
-                } else if (find_symbol->symType == codeSymbol) {
-                    find_symbol->symType = entryCodeSymbol;
-                } else {
-                    printf("********* label defined twice as entry or label defined but also defined as extern\n");
-                    printf("********* Semantic error in file: %s line: %d, redefinition of symbol: %s\n", amFileName, line_counter, find_symbol->symName);
-                    is_error = TRUE;
-                }
-            } else if (!find_symbol) {
-                if (symbol == NULL) {
-                    printf("********* Memory allocation error\n");
-                    exit(1);
-                }
-                strcpy(symbol->symName, ast.operands.dir_ops.data_dir->data_option.label);
-                symbol->symType = ast.operation_code.dir_code;
-                vector_insert(translation_unit->symbols, symbol);
-            } else {
-                printf("********* label wasn't already defined\n");
-                printf("********* Semantic error in file: %s line: %d, redefinition of symbol: %s\n", amFileName, line_counter, find_symbol->symName);
-                is_error = TRUE;
-            }
-        }else if(ast.typeofLine == define){
-            find_symbol = does_symbol_exist(translation_unit->symbols,  ast.operands.dir_ops.data_dir[0].data_option.label);
-            if(find_symbol){
-                printf("error, symbol already defined\n");
-            }
-            else{
-                strcpy(symbol->symName, ast.operands.dir_ops.data_dir[0].data_option.label);
-                symbol->symType = ast.operation_code.dir_code;
-                symbol->address = ast.operands.dir_ops.data_dir[1].data_option.num;
-                vector_insert(translation_unit->symbols, symbol);
-
-            }
-
-        } */
-        /* free(symbol); does problems when freeing symbol, like not printing 00000000000001 1 after 00001010000100 644*/
         line_counter++;     
     }
 
@@ -296,7 +243,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         printf("********* DC is: %d\nIC is: %d\n\n", dc, ic);
         VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
             if (*begin) {
-            symbol = *begin;
+            symbol = (struct symbol *) *begin;
             printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
             }
         }
