@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/mid",
             "args": [
-                "${workspaceFolder}/try1"
+                "${workspaceFolder}/psNEW"
             ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
