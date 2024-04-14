@@ -62,6 +62,7 @@ frontend_ast frontend(char* line){
         (*ast).typeofLine = error;
         return (*ast);
     }
+    
     /* removing the newline character from the end of the line*/ 
     if(line[strlen(line) - 1] == '\n'){
         start = line;
