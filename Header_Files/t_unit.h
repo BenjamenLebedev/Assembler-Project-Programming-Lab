@@ -10,7 +10,7 @@ struct translation_unit {
     struct vector *symbols;
     struct vector *externals;
 };
-
+ 
 
 /**
  * @brief Creates a new translation unit.

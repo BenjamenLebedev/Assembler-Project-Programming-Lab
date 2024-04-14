@@ -12,7 +12,7 @@
 
 void convertToSecretBase(int number, char secretBase[]) {
 
-    int i;
+    int i; 
     int mask,pair;
 
 
@@ -110,3 +110,73 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
     return is_error;
 
 }
+
+
+int make_extern_file(const struct translation_unit *translation_unit, char *FileName){\
+    int i;
+    int is_error = FALSE;
+    void *const *begin;
+    void *const *end;
+    struct ext *external;
+
+    char * file_ext_name;
+    FILE *file_ext;
+    char *ext_extension = ".ext";
+
+    file_ext_name = (char *)malloc(strlen(FileName) + + strlen(ext_extension) + 1);
+    strcpy(file_ext_name, FileName);
+    strcat(file_ext_name, ext_extension);
+    file_ext = fopen(file_ext_name, "w"); /*create file*/ 
+
+    if(file_ext){
+        printf("in extern if(file_ext) func\n");
+        VECTOR_FOR_EACH(begin, end, translation_unit->externals) {
+            if (*begin) {
+                external = (struct ext *) *begin;
+                printf("********* extern: %s, count: %d\n", external->ext_name, external->address_count); 
+
+                for(i=0; i<external->address_count; i++){
+                    fprintf(file_ext, "%s\t%d\n", external->ext_name, external->address[i]);
+                }
+            }
+        }
+    }
+    fclose(file_ext);
+    free(file_ext_name);
+
+    return is_error;
+
+}
+
+int make_entries_file(const struct translation_unit *translation_unit, char *FileName){\
+    int is_error = FALSE;
+    void *const *begin;
+    void *const *end;
+    struct symbol *entrie;
+
+    char * file_ent_name;
+    FILE *file_ent;
+    char *ent_extension = ".ent";
+
+    file_ent_name = (char *)malloc(strlen(FileName) + + strlen(ent_extension) + 1);
+    strcpy(file_ent_name, FileName);
+    strcat(file_ent_name, ent_extension);
+    file_ent = fopen(file_ent_name, "w"); /*create file*/ 
+
+    if(file_ent){
+        printf("in extern if(file_ext) func\n");
+        VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
+            if (*begin) {
+                entrie = (struct symbol *) *begin;   
+                if(entrie->symType == entryDataSymbol || entrie->symType == entryCodeSymbol ){
+                    printf("********* entry: %s\n", entrie->symName); 
+                    fprintf(file_ent, "%s\t%d\n", entrie->symName, entrie->address);
+                }
+            }
+        }
+    }
+    fclose(file_ent);
+    free(file_ent_name);
+    return is_error;
+}
+

@@ -18,7 +18,7 @@ void * symbol_ctor (const void * copy) {
     if(new_p == NULL) 
         return NULL;  
     return memcpy(new_p,copy,sizeof(struct symbol));
-}
+} 
 /*delete function for vector  */
 void symbol_dtor(void * item){
     free(item);
@@ -126,7 +126,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             continue;
         }
         else if(ast.typeofLine == empty){
-            line_counter++;
+            /* line_counter++; */
             continue;
         }
        
@@ -139,11 +139,12 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             if (find_symbol) {
                 if (find_symbol->symType == entrySymbol) {
                     if (ast.typeofLine == inst) {
-                        symbol->symType = entryCodeSymbol;
-                        symbol->address = ic;
+                        find_symbol->symType = entryCodeSymbol;
+                        find_symbol->address = ic;
                     } else {
-                        symbol->symType = entryDataSymbol;
-                        symbol->address = dc;
+                        printf("changing to entryDataSymbol\n");
+                        find_symbol->symType = entryDataSymbol;
+                        find_symbol->address = dc;
                     }
                 } else {
                     printf("********* symbol found but not of .entry type\n");
@@ -200,12 +201,14 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             }
         }
 
-                if (ast.typeofLine == dir && ((ast.operation_code.dir_code == dir_entry) || (ast.operation_code.dir_code == dir_extern))) {
+        if (ast.typeofLine == dir && ((ast.operation_code.dir_code == dir_entry) || (ast.operation_code.dir_code == dir_extern))) {
             find_symbol = does_symbol_exist(translation_unit->symbols, ast.operands.dir_ops.data_dir->data_option.label);
             if ((find_symbol != NULL) && (ast.operation_code.dir_code == dir_entry)) {
                 if (find_symbol->symType == dataSymbol) {
+                    printf("changing to entry data symbol");
                     find_symbol->symType = entryDataSymbol;
                 } else if (find_symbol->symType == codeSymbol) {
+                    printf("changing to entry code symbol");
                     find_symbol->symType = entryCodeSymbol;
                 } else {
                     printf("********* label defined twice as entry or label defined but also defined as extern\n");
@@ -213,13 +216,8 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                     is_error = TRUE;
                 }
             } else if (!find_symbol) {
-                /* symbol = malloc(sizeof(struct symbol)); */
-                if (symbol == NULL) {
-                    printf("********* Memory allocation error\n");
-                    exit(1);
-                }
                 strcpy(symbol->symName, ast.operands.dir_ops.data_dir->data_option.label);
-                symbol->symType = (symType) ast.operation_code.dir_code;
+                symbol->symType = ast.operation_code.dir_code;
                 vector_insert(translation_unit->symbols, symbol);
             } else {
                 printf("********* label wasn't already defined\n");
@@ -233,10 +231,10 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             }
             else{
                 strcpy(symbol->symName, ast.operands.dir_ops.data_dir[0].data_option.label);
-                symbol->symType = (symType) ast.operation_code.dir_code;
+                /* symbol->symType = ast.operation_code.dir_code; */
+                symbol->symType = dataSymbol;
                 symbol->address = ast.operands.dir_ops.data_dir[1].data_option.num;
                 vector_insert(translation_unit->symbols, symbol);
-
             }
 
         }
@@ -295,6 +293,14 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
     }
 
 
+        printf("********* DC is: %d\nIC is: %d\n\n", dc, ic);
+        VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
+            if (*begin) {
+            symbol = *begin;
+            printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
+            }
+        }
+
     printf("\n********* checking to see if there is a symbol that was declared but not defined:\n");
     VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
         if (*begin) {
@@ -313,13 +319,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
     printf("\n");
 
 
-        printf("********* DC is: %d\nIC is: %d\n\n", dc, ic);
-        VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
-            if (*begin) {
-            symbol =(struct symbol *) *begin;
-            printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
-            }
-        }
+
 
     /*data_image part*/
     rewind(amFile);
@@ -392,7 +392,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
 
     
     frontend_ast ast = {0};
-    /*struct ext *find_extern;*/
+    struct ext *find_extern;
     struct symbol *find_symbol;
    /* void *const *begin;  
     void *const *end;
@@ -406,6 +406,11 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
 
     rewind(amFile);
     while (fgets(line, sizeof(line), amFile)) {
+
+        /*empty line */
+        if(ast.typeofLine == empty){
+            continue;
+        }
         is_op_source =0;
 
         printf("********* Processing line in second pass: %s\n", line);
@@ -485,20 +490,21 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
                                 add_to_code_image(translation_unit,0);
                                 translation_unit->code_image[translation_unit->IC] |= 1;
                                 /* translation_unit->IC++; */
-                                /* find_extern = does_extern_exist(translation_unit->externals,find_symbol->symName);  */
+                                find_extern = does_extern_exist(translation_unit->externals,find_symbol->symName); 
 
                                 /*if extern already exists in externals vec */
-/*                                 if(find_extern){
+                                if(find_extern){
                                     find_extern->address[find_extern->address_count] = translation_unit->IC + 100;
                                     find_extern->address_count++;
-                                } */
+                                }
                                 /*if extern doesn't exist in externals vec, we will add it */
-/*                                 else{
+                                else{
+                                    printf("adding extern\n");
                                     extern1->address[0] = translation_unit->IC + 100;
-                                    extern1->address_count++;
+                                    extern1->address_count = 1;
                                     extern1->ext_name = ast.operands.inst_ops[i].data_inst.data_option.label;
                                     vector_insert(translation_unit->externals, extern1); 
-                                }     */                           
+                                }                               
                             }/*if symbol is not extern*/
                             else{
                                 printf("in here, making ARE = 10");

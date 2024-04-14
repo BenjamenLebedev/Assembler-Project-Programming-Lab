@@ -11,7 +11,7 @@ typedef enum symType{
         codeSymbol,
         dataSymbol,
         entryCodeSymbol,
-        entryDataSymbol
+        entryDataSymbol 
 } symType;
 
 struct symbol{      /* תווית *//* hello: , x: ...*/

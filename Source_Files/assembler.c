@@ -7,19 +7,8 @@
 #include "../Header_Files/back.h" 
 #include "../Header_Files/pre.h"
 #include "../Header_Files/vector.h"
- 
-void print_ob(char *filename){
-    printf("printing ob file for %s\n", filename);
-}
-void print_ent(char *filename){
-    printf("printing ent file for %s\n", filename);
-}
-void print_ext(char *filename){
-    printf("printing ext file for %s\n", filename);
-}
-
-
-
+  
+  
 int main(int argc, char *argv[]) {
     int i;
     FILE *amFile;
@@ -61,7 +50,7 @@ int main(int argc, char *argv[]) {
                 printf("********* printing symbols inside translation_unit:\n");
                 VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
                     if (*begin) {
-                    symbol = (struct symbol *) *begin;
+                    symbol = *begin;
                     printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
                     }
                 }
@@ -79,10 +68,25 @@ int main(int argc, char *argv[]) {
                     printf("********* printing data image:\n\n\n");
                     print_data_image(translation_unit); 
 
-                    if(make_ob_file(translation_unit,argv[i])){
+                    if(!make_ob_file(translation_unit,argv[i])){
                         printf("---------------------------------------------------------------------------------------------------- \n");
-                        printf("------------------------------------  Back completed successfully ---------------------------------- \n");
+                        printf("------------------------------------  make_ob_file completed successfully -------------------------- \n");
                         printf("---------------------------------------------------------------------------------------------------- \n");
+                        if(!make_extern_file(translation_unit,argv[i])){
+                            printf("---------------------------------------------------------------------------------------------------- \n");
+                            printf("-----------------------------  make_extern_file completed successfully ----------------------------- \n");
+                            printf("---------------------------------------------------------------------------------------------------- \n");
+                            
+                            if(!make_entries_file(translation_unit,argv[i])){
+                                printf("---------------------------------------------------------------------------------------------------- \n");
+                                printf("-----------------------------  make_entries_file completed successfully ----------------------------- \n");
+                                printf("---------------------------------------------------------------------------------------------------- \n");
+                                printf("\n\n\n");
+                                printf("---------------------------------------------------------------------------------------------------- \n");
+                                printf("   -----------------------------  ALL completed successfully!!!! ----------------------------- \n");
+                                printf("---------------------------------------------------------------------------------------------------- \n");
+                            }  
+                        }
                     }
                     else {
                         printf("---------------------------------------------------------------------------------------------------- \n");
