@@ -1,11 +1,19 @@
-; hello there you little prick
-
-HH: .entry Y
-.extern Y
-.define x = -2
-LIST: .data 22,5,-3
-DATA: .data 2, 3, LIST[x]
-LABEL: cmp #2,LIST
-LIST2: .data 4,2,5,LIST[LABEL]
-LIST3: .data 4,3,STR[6],STR[2],STR[x]
-STR: .string "abcdef22ds"
+.entry LIST
+.extern W
+.define sz = 2
+MAIN: mov r3, LIST[sz]
+LOOP: jmp W
+ prn #-5
+ mov STR[5], STR[2]
+ sub r1, r4
+ cmp K, #sz
+ bne W
+L1: inc L3
+.entry LOOP
+ bne LOOP
+END: hlt
+.define len = 4
+STR: .string "abcdef"
+LIST: .data 6, -9, len
+K: .data 22
+.extern L3 
