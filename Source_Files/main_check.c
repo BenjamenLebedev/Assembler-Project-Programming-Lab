@@ -2,7 +2,7 @@
 #include "../Header_Files/global_var.h"
 
    
-int main(){
+int mainss(){
 
     frontend_ast *ast;
     char *line = "   .define \nabcdef = 1234  \n";
