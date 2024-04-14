@@ -19,7 +19,7 @@ void print_ext(char *filename){
 
 
 
-int main(int argc, char *argv[]) {
+int mainss(int argc, char *argv[]) {
     int i;
     FILE *amFile;
     char *amFileName;
