@@ -37,4 +37,7 @@ void add_to_data_image(struct translation_unit *unit, int value);
 
 void print_code_image(struct translation_unit *unit);
 void print_data_image(struct translation_unit *unit);
+
+void free_translation_unit(struct translation_unit *unit);
+void printBinary14(int num);
 #endif 

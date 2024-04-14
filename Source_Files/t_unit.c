@@ -12,7 +12,7 @@ struct translation_unit *create_translation_unit() {
     if (unit != NULL) {
         unit->code_image = NULL;
         unit->data_image = NULL;
-        unit->IC = 0;
+        unit->IC = 0; 
         unit->DC = 0;
         unit->symbols = new_vector(NULL, NULL);
         unit->externals = new_vector(NULL, NULL);
@@ -25,7 +25,7 @@ void add_to_code_image(struct translation_unit *unit, int value) {
         printf("Error: Invalid translation unit.\n");
         return;
     }
-    if (unit->IC % 10 +1 == 1) {
+    if (unit->IC % 10 +1 == 1) {    
         int *temp = (int *)realloc(unit->code_image, (unit->IC + 10 - 1) * sizeof(int));
         printf("relocating memory in add_to_code_image func\n");
         if (temp == NULL) {
@@ -42,7 +42,7 @@ void add_to_data_image(struct translation_unit *unit, int value) {
         printf("Error: Invalid translation unit.\n");
         return;
     }
-    if (unit->DC % 10 +1 == 1) {
+    if (unit->DC % 10 +1== 1) {
         int *temp = (int *)realloc(unit->data_image, (unit->DC + 10 - 1) * sizeof(int));
         if (temp == NULL) {
             printf("Error: Memory reallocation failed for data_image.\n");
@@ -96,13 +96,10 @@ void print_code_image(struct translation_unit *unit) {
 
     printf("Code Image:\n");
     for (i = 0; i < unit->IC; i++) {
-        if(unit->code_image[i] == 0){
-            printf("--\n");
-        }
-        else{
-            printBinary14(unit->code_image[i]);
-            printf("%d\n", unit->code_image[i]);
-        }    
+        printf("%d  ",100+i);
+        printBinary14(unit->code_image[i]);
+        printf("       %d\n", unit->code_image[i]);
+ 
     }
     printf("\n");
 }

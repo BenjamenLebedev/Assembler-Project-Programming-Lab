@@ -2,7 +2,7 @@
 #define MID_H
 
 #include "vector.h"
-#include "global_var.h"
+#include "global_var.h" 
 #include "t_unit.h"
  
 typedef enum symType{
