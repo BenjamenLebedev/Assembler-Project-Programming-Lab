@@ -125,7 +125,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             is_error = TRUE;
             continue;
         }
-        else if(ast.typeofLine = empty){
+        else if(ast.typeofLine == empty){
             line_counter++;
             continue;
         }
@@ -392,7 +392,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
 
     
     frontend_ast ast = {0};
-    struct ext *find_extern;
+    /*struct ext *find_extern;*/
     struct symbol *find_symbol;
    /* void *const *begin;  
     void *const *end;
