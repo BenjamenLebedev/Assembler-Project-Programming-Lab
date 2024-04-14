@@ -2,7 +2,7 @@
 #define MID_H
 
 #include "vector.h"
-#include "global_var.h"
+#include "global_var.h" 
 #include "t_unit.h"
  
 typedef enum symType{
@@ -15,7 +15,7 @@ typedef enum symType{
 } symType;
 
 struct symbol{      /* תווית *//* hello: , x: ...*/
-    char symName[32];
+    char symName[MAX_LABEL_LEN];
     int address;
     symType symType;
 };  

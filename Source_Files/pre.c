@@ -311,10 +311,13 @@ char * preprocessor(char * name){
                 break;   
         }
     }
-    printf("call for displayMacros:\n");
-    displayMacros(macros);
+    
+    if(macros != NULL){
+        printf("call for displayMacros:\n");
+        displayMacros(macros);
+        free_Macros(macros);
+    }
     free(file_as_name);
-    free_Macros(macros);
     macros = NULL;
     fclose(file_as);
     fclose(file_am);

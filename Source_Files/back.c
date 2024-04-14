@@ -13,17 +13,28 @@
 void convertToSecretBase(int number, char secretBase[]) {
 
     int i;
+    int mask,pair;
 
-    /* initialize the array with '*' */
-    for (i = 0; i < 7; i++) {
-        secretBase[i] = '*';
+
+    /* initialize the array with '*' */ 
+    if (number < 0) {
+        /* number = -number - 1;  */
+        for (i = 0; i < 7; i++) {  
+            secretBase[i] = '!';
+        }
+    } else {
+        for (i = 0; i < 7; i++) {
+            secretBase[i] = '*';
+        }
     }
     secretBase[7] = '\0'; 
 
     /* convert the number to secret base */
     i = 6; /* start from the end of the array */
     while (number > 0 && i >= 0) {
-        switch (number % 4) {
+        mask =3;
+        pair = number & mask;
+        switch (pair) {
             case 0:
                 secretBase[i--] = '*';
                 break;
@@ -37,8 +48,28 @@ void convertToSecretBase(int number, char secretBase[]) {
                 secretBase[i--] = '!';
                 break;
         }
-        number = number/4;
+        number >>= 2;
     }
+    while (number < 0 && i >= 0) {
+        mask =3;
+        pair = number & mask;
+        switch (pair) {
+            case 0:
+                secretBase[i--] = '*';
+                break;
+            case 1:
+                secretBase[i--] = '#';
+                break;
+            case 2:
+                secretBase[i--] = '%';
+                break;
+            case 3:
+                secretBase[i--] = '!';
+                break;
+        }
+        number >>= 2;
+    }
+
 
 }
 
@@ -60,7 +91,7 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
     if(file_ob){
         for(i = 0; i<translation_unit->IC; i++){
             convertToSecretBase(translation_unit->code_image[i], secretBase);
-            printf("IC: %s\n", secretBase);
+            printf("IC %d: %s\n",i+100, secretBase);
             fprintf(file_ob, "%s\n", secretBase);
         }
 
