@@ -69,8 +69,7 @@ void convertToSecretBase(int number, char secretBase[]) {
         }
         number >>= 2;
     }
-
-
+    
 }
 
 
