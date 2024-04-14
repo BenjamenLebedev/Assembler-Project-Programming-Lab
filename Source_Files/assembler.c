@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
                 printf("********* printing symbols inside translation_unit:\n");
                 VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
                     if (*begin) {
-                    symbol = *begin;
+                    symbol = (struct symbol *) *begin;
                     printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
                     }
                 }

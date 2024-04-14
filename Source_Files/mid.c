@@ -219,7 +219,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                     exit(1);
                 }
                 strcpy(symbol->symName, ast.operands.dir_ops.data_dir->data_option.label);
-                symbol->symType = ast.operation_code.dir_code;
+                symbol->symType = (symType) ast.operation_code.dir_code;
                 vector_insert(translation_unit->symbols, symbol);
             } else {
                 printf("********* label wasn't already defined\n");
@@ -233,7 +233,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             }
             else{
                 strcpy(symbol->symName, ast.operands.dir_ops.data_dir[0].data_option.label);
-                symbol->symType = ast.operation_code.dir_code;
+                symbol->symType = (symType) ast.operation_code.dir_code;
                 symbol->address = ast.operands.dir_ops.data_dir[1].data_option.num;
                 vector_insert(translation_unit->symbols, symbol);
 
@@ -316,7 +316,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         printf("********* DC is: %d\nIC is: %d\n\n", dc, ic);
         VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
             if (*begin) {
-            symbol = *begin;
+            symbol =(struct symbol *) *begin;
             printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
             }
         }
