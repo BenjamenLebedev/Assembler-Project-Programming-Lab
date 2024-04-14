@@ -29,7 +29,7 @@ frontend_ast frontend(char* line){
     frontend_ast *ast; 
     char *copy_line,*char_skip,*label,**saveptr;
     char *start,*end_newline;
-    int check_dir,check_inst;
+    int check_dir,check_inst,check_empty;
 
     /* Allocate memory for the AST */
     ast = (frontend_ast *) calloc(1, sizeof(frontend_ast));
@@ -55,31 +55,35 @@ frontend_ast frontend(char* line){
         return (*ast);
     }
 
-    
+    /*creating a copy of the line for printing purposes or for removing newline characters*/
+    copy_line = (char*) calloc(strlen(line) + 1, sizeof(char));
+    if(copy_line == NULL){
+        strcpy((*ast).errors, "Memory allocation error\n");
+        (*ast).typeofLine = error;
+        return (*ast);
+    }
     /* removing the newline character from the end of the line*/ 
     if(line[strlen(line) - 1] == '\n'){
-        copy_line = (char*) calloc(strlen(line) + 1, sizeof(char));
-        if(copy_line == NULL){
-            strcpy((*ast).errors, "Memory allocation error\n");
-            (*ast).typeofLine = error;
-            return (*ast);
-        }
         start = line;
-        end_newline = strchr(line, '\n');
+        end_newline = &line[strlen(line) - 1];
         memcpy(copy_line, start, end_newline - start);
         copy_line[end_newline - start] = '\0';
         line = copy_line;
     }
-    /* a case where a newline character is somewhere in the middle*/
-    if(strchr(line, '\n') && line[strlen(line) - 1] != '\n'){
+    else strcpy(copy_line, line);
+
+    /* a case where a newline character is somewhere in the middle - cutting the line off*/
+    if(strchr(line, '\n') && line[strlen(line) - 1] != '\n' && check_mid_newline(line,saveptr)){
         strcpy((*ast).errors, "a newline character appears in the middle of the line\n");
         (*ast).typeofLine = error;
+        print_ast(ast,copy_line);
         return (*ast);
     } 
 
-    /* found ; signifying it's a possible comment line*/
-    if(strchr(line, ';')){
-        if(line[0] == ';'){
+    /* found ; at the start of the line signifying it's a possible comment line*/
+    /* Or if the line is just empty - only white spaces */
+    if(strchr(line, ';') || (check_empty = isEmptyString(trimStartEnd(line))) ){
+        if(line[0] == ';' || check_empty){
             (*ast).errors = NULL;
             (*ast).typeofLine = empty;
             print_ast(ast,copy_line);
@@ -142,10 +146,9 @@ frontend_ast frontend(char* line){
 void print_ast(frontend_ast *ast,char *line){
 
     int i;
-    printf("The processed line of the AST is: %s\n", line);
+    printf("The processed line of the AST is: [%s]\n", line);
     if((*ast).errors) printf("The AST errors are: %s\n", (*ast).errors);
 
-    printf("The AST label is: %s\n", (*ast).label);
     printf("The AST typeofLine is: %d ", (*ast).typeofLine);
     if((*ast).typeofLine == empty)      printf(" (empty) \n");
     else if((*ast).typeofLine == inst)  printf(" (inst) \n");
@@ -153,6 +156,8 @@ void print_ast(frontend_ast *ast,char *line){
     else if((*ast).typeofLine == define)printf(" (define) \n");
     else if((*ast).typeofLine == error) printf(" (error) \n");
 
+    if((*ast).typeofLine != error) printf("The AST label is: %s\n", (*ast).label);
+    
     /* inst_ops */
     if((*ast).typeofLine == inst){
         printf("The AST operation_code.inst_code is: %d", (*ast).operation_code.inst_code);
@@ -243,6 +248,23 @@ void print_ast(frontend_ast *ast,char *line){
             (*ast).operands.dir_ops.data_dir[i].offset.num);
         }
     }
+}
+
+int check_mid_newline(char *line,char **saveptr){
+    char *token,*token1;
+    int i;
+
+    i = 0;
+    token = my_strtok(line, "\n", saveptr);
+    token1 = token;
+    
+    while(token){
+        /* only if there's something (not white spaces) before and after the first newline character*/
+        if(i > 0 && !isEmptyString(token1) && !isEmptyString(token)) return 1;
+        token = my_strtok(NULL, "\n", saveptr);
+        i++;
+    }
+    return 0;
 }
 
 char *check_legal_label(frontend_ast *ast, char *str,int arg,char **saveptr){
