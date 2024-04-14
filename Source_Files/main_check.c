@@ -1,12 +1,11 @@
 #include "../Header_Files/ast.h"
 #include "../Header_Files/global_var.h"
 
-void print_ast(frontend_ast *ast);
    
 int mainss(){
 
     frontend_ast *ast;
-    char *line = "STR: rts  \n";
+    char *line = "   .define \nabcdef = 1234  \n";
 
     /*“abcdef”*/
 
