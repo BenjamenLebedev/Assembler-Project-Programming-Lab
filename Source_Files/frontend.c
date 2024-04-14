@@ -313,7 +313,7 @@ char *check_legal_label(frontend_ast *ast, char *str,int arg,char **saveptr){
     if(!arg){ /*if it's a line label (before a colon), checking what is after that*/
         token = my_strtok(NULL, ":", saveptr);
         /*if there's no space after the colon it's an error*/
-        if(token && token[0] != ' '){ 
+        if(token && !isspace(token[0])){ 
             strcpy((*ast).errors, "Missing space after label declaration\n");
             return NULL;
         }
