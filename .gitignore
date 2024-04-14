@@ -2,10 +2,12 @@ Course_assignments.pdf
 frontend_ex
 /draft
 mid
-out.txt
+
 # text files
 *.txt
 *.am
+*.ent
+*.ext
 # Prerequisites
 *.d
 
