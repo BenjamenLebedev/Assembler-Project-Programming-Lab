@@ -31,7 +31,7 @@ void * vector_insert(Vector v,const void * copy_item) {
     int it;
     void ** temp;
     if(v->item_count == v->pointer_count) {
-        v->pointer_count *=2;
+        v->pointer_count *= 2;
         temp = (void**) realloc(v->items,v->pointer_count * sizeof(void *));
         if(temp == NULL) {
             v->pointer_count /= 2;
