@@ -385,6 +385,15 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum, char **save
 address_0_op address_type_0(frontend_ast *ast,char *str, char **saveptr);
 
 /**
+ * @brief This function checks whether there is a newline character in the middle of the recieved string.
+ * 
+ * @param line the string to be examined.
+ * @param saveptr the pointer to the that is used during tokenization of a string.
+ * @return int returns 0 if there is no newline character in the middle of the string, 1 otherwise.
+ */
+int check_mid_newline(char *line,char **saveptr);
+
+/**
  * @brief prints the AST - including all the substructures
  * 
  * @param ast the AST to be printed
