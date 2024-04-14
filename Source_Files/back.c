@@ -74,7 +74,7 @@ void convertToSecretBase(int number, char secretBase[]) {
 
 
 int make_ob_file(const struct translation_unit *translation_unit, char *FileName){
-    int i;
+    int i,total;
     char secretBase[8];
     int is_error = FALSE;
 
@@ -88,16 +88,17 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
     file_ob = fopen(file_ob_name, "w"); /*create file*/ 
 
     if(file_ob){
-        for(i = 0; i<translation_unit->IC; i++){
+        fprintf(file_ob, "  %d %d\n", translation_unit->IC, translation_unit->DC);
+        for(total = i = 0; i<translation_unit->IC; i++, total++){
             convertToSecretBase(translation_unit->code_image[i], secretBase);
             printf("IC %d: %s\n",i+100, secretBase);
-            fprintf(file_ob, "%s\n", secretBase);
+            fprintf(file_ob, "%04d %s\n",total+100, secretBase);
         }
 
-        for(i = 0; i<translation_unit->DC; i++){
+        for(i = 0; i<translation_unit->DC; i++, total++){
             convertToSecretBase(translation_unit->data_image[i], secretBase);
             printf("DC: %s\n", secretBase);
-            fprintf(file_ob, "%s\n", secretBase);
+            fprintf(file_ob, "%04d %s\n",total+100 ,secretBase);
         }
     }
     else{
@@ -135,7 +136,7 @@ int make_extern_file(const struct translation_unit *translation_unit, char *File
                 printf("********* extern: %s, count: %d\n", external->ext_name, external->address_count); 
 
                 for(i=0; i<external->address_count; i++){
-                    fprintf(file_ext, "%s\t%d\n", external->ext_name, external->address[i]);
+                    fprintf(file_ext, "%s\t%04d\n", external->ext_name, external->address[i]);
                 }
             }
         }
@@ -169,7 +170,7 @@ int make_entries_file(const struct translation_unit *translation_unit, char *Fil
                 entrie = (struct symbol *) *begin;   
                 if(entrie->symType == entryDataSymbol || entrie->symType == entryCodeSymbol ){
                     printf("********* entry: %s\n", entrie->symName); 
-                    fprintf(file_ent, "%s\t%d\n", entrie->symName, entrie->address);
+                    fprintf(file_ent, "%s\t%04d\n", entrie->symName, entrie->address);
                 }
             }
         }
