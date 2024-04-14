@@ -15,5 +15,5 @@ END: hlt
 .define len = 4
 STR: .string "abcdef"
 LIST: .data 6, -9, len
-K: .data 22
+K: .data 22 
 .extern L3 
