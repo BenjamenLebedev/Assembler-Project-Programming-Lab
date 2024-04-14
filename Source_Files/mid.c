@@ -329,7 +329,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
 
 int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE *amFile){
     int i, is_op_source;
-    char line[81];
+    char line[MAX_LINE_LEN];
     int line_counter = 1;
     int is_error = FALSE;
  /*    int ic = 100;
@@ -353,18 +353,19 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
 
     rewind(amFile);
     while (fgets(line, sizeof(line), amFile)) {
-
+        
+        
+        printf("********* Processing line in second pass: %s\n", line);
+        /* ast = front_end_func_simulator_multi_text(line_counter); */
+        ast = frontend(line);
+        printf("********* ast returned line in second pass: %s\n", line);
+        
         /*empty line */
         if(ast.typeofLine == empty){
             continue;
         }
         is_op_source =0;
 
-        printf("********* Processing line in second pass: %s\n", line);
-        /* ast = front_end_func_simulator_multi_text(line_counter); */
-        ast = frontend(line);
-        printf("********* ast returned line in second pass: %s\n", line);
-        
         /*incase that line is of type instruction */
         if(ast.typeofLine == inst){
             /*first binary word, same format for all code line*/
