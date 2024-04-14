@@ -32,7 +32,7 @@ void convertToSecretBase(int number, char secretBase[]) {
     /* convert the number to secret base */
     i = 6; /* start from the end of the array */
     while (number > 0 && i >= 0) {
-        mask =3;
+        mask = 3;
         pair = number & mask;
         switch (pair) {
             case 0:
@@ -51,7 +51,7 @@ void convertToSecretBase(int number, char secretBase[]) {
         number >>= 2;
     }
     while (number < 0 && i >= 0) {
-        mask =3;
+        mask = 3;
         pair = number & mask;
         switch (pair) {
             case 0:
@@ -69,7 +69,7 @@ void convertToSecretBase(int number, char secretBase[]) {
         }
         number >>= 2;
     }
-    
+
 }
 
 
