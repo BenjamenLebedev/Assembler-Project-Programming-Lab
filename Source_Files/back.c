@@ -91,12 +91,13 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
 
     if(file_ob){
         fprintf(file_ob, "  %d %d\n", translation_unit->IC, translation_unit->DC);
+        /*first printing the code image*/
         for(total = i = 0; i<translation_unit->IC; i++, total++){
             convertToSecretBase(translation_unit->code_image[i], secretBase);
             printf("IC %d: %s\n",i+100, secretBase);
             fprintf(file_ob, "%04d %s\n",total+100, secretBase);
         }
-
+        /*now printing the data image*/
         for(i = 0; i<translation_unit->DC; i++, total++){
             convertToSecretBase(translation_unit->data_image[i], secretBase);
             printf("DC: %s\n", secretBase);
@@ -134,7 +135,7 @@ int make_extern_file(const struct translation_unit *translation_unit, char *File
     strcat(file_ext_name, ext_extension);
 
 
-    /*only open file if there are any external symbols that are used somewhere*/
+    /*only open file if there are any external symbols that are used in the assembly code*/
     external = (struct ext *) vector_begin(translation_unit->externals); 
     if(external && translation_unit->extern_use == TRUE){
         file_ext = fopen(file_ext_name, "w"); /*create file*/
