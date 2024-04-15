@@ -5,10 +5,13 @@
 struct translation_unit {
     int *code_image;
     int *data_image;
-    int IC;
-    int DC;
-    struct vector *symbols;
-    struct vector *externals;
+    int IC; /* Instruction Counter */
+    int DC; /* Data Counter */
+    struct vector *symbols; /*Vector that stores the entry symbols*/
+    struct vector *externals; /*Vector that stores the external symbols and the addresses at which each symbol is used*/
+    /*flag to indicate whether an extern symbol has an address - meaning it's used somewhere*/
+    int extern_use; 
+    int entry_use; /*flag to indicate whether there are entry symbols*/
 };
  
 
