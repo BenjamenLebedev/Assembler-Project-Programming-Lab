@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <errno.h> 
 #include <stdarg.h>
+#include <stddef.h>
 
 enum {
     FALSE,
