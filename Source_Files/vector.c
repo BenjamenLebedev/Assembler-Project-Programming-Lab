@@ -18,7 +18,7 @@ Vector new_vector(void * (*ctor)(const void *copy),void (*dtor)(void *item)) {
         return NULL;
     newVec->pointer_count = VECTOR_BEGIN_SIZE;
     newVec->items = (void**) calloc(VECTOR_BEGIN_SIZE,sizeof(void*));
-    if(newVec->items == NULL) {
+    if(newVec->items == NULL) { /*memory allocation failed*/
         free(newVec);
         return NULL;
     }
@@ -33,7 +33,7 @@ void * vector_insert(Vector v,const void * copy_item) {
     if(v->item_count == v->pointer_count) {
         v->pointer_count *= 2;
         temp = (void**) realloc(v->items,v->pointer_count * sizeof(void *));
-        if(temp == NULL) {
+        if(temp == NULL) { /*memory allocation failed - we reduce back the size and abort*/
             v->pointer_count /= 2;
             return NULL;
         }
@@ -60,8 +60,6 @@ void * vector_insert(Vector v,const void * copy_item) {
     }
     return v->items[v->item_count-1];
 }
-
-
 
 
 void *const *vector_begin(const Vector v) {
