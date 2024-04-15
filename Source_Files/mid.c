@@ -1,10 +1,5 @@
 /*directive can have STRING[2] or STRING[len] but not STRING[LOOP[2]]*/
 
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h> 
-#include <string.h>
-#include <stdlib.h> 
 #include "../Header_Files/vector.h"
 #include "../Header_Files/mid.h" 
 #include "../Header_Files/global_var.h"
@@ -145,6 +140,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                         find_symbol->symType = entryDataSymbol;
                         find_symbol->address = dc;
                     }
+                    translation_unit -> entry_use = TRUE;
                 } else {
                     printf("********* symbol found but not of .entry type\n");
                     printf("********* Semantic error in file: %s line: %d, redefinition of symbol\n", amFileName, line_counter);
@@ -205,9 +201,11 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                 if (find_symbol->symType == dataSymbol) {
                     printf("changing to entry data symbol");
                     find_symbol->symType = entryDataSymbol;
+                    translation_unit -> entry_use = TRUE;
                 } else if (find_symbol->symType == codeSymbol) {
                     printf("changing to entry code symbol");
                     find_symbol->symType = entryCodeSymbol;
+                    translation_unit -> entry_use = TRUE;
                 } else {
                     printf("********* label defined twice as entry or label defined but also defined as extern\n");
                     printf("********* Semantic error in file: %s line: %d, redefinition of symbol: %s\n", amFileName, line_counter, find_symbol->symName);
@@ -444,12 +442,14 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
                                 if(find_extern){
                                     find_extern->address[find_extern->address_count] = translation_unit->IC + 100;
                                     find_extern->address_count++;
+                                    translation_unit->extern_use = TRUE;
                                 }
                                 /*if extern doesn't exist in externals vec, we will add it */
                                 else{
                                     printf("adding extern\n");
                                     extern1->address[0] = translation_unit->IC + 100;
                                     extern1->address_count = 1;
+                                    translation_unit->extern_use = TRUE;
                                     extern1->ext_name = ast.operands.inst_ops[i].data_inst.data_option.label;
                                     vector_insert(translation_unit->externals, extern1); 
                                 }                               
