@@ -1,9 +1,5 @@
 
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h> 
-#include <string.h>
-#include <stdlib.h> 
+#include "../Header_Files/global_var.h"
 #include "../Header_Files/t_unit.h" 
 #include "../Header_Files/vector.h"
 
@@ -16,6 +12,8 @@ struct translation_unit *create_translation_unit() {
         unit->DC = 0;
         unit->symbols = new_vector(NULL, NULL);
         unit->externals = new_vector(NULL, NULL);
+        unit->extern_use = FALSE;
+        unit->entry_use = FALSE;
     }
     return unit;
 }
