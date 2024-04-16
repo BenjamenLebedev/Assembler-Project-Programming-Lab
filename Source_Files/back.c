@@ -217,31 +217,6 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
 /**************functions for sorting the symbol(enrty) vector****************/
 /****************************************************************************/
 
-/*bubble sort*/
-void vector_sort(struct translation_unit *translation_unit){
-
-    void **begin_i,**begin_j;
-    void **end_i,**end_j;
-    struct symbol *temp;
-    int i,j;
-    int vecSize = vector_get_item_count(translation_unit->symbols);
-    
-    for(begin_i = (void **) vector_begin(translation_unit->symbols), end_i = (void **) vector_end(translation_unit->symbols),\
-     i=0; begin_i < end_i && i < vecSize; begin_i++, i++){
-        for(begin_j = (void **) vector_begin(translation_unit->symbols), end_j = (void **) vector_end(translation_unit->symbols), \
-        j=0; begin_j < end_j && j < vecSize; begin_j++, j++){
-            if(*begin_i && *begin_j){
-                if(((struct symbol *)*begin_i)->address < ((struct symbol *)*begin_j)->address){
-                    temp = (struct symbol *) *begin_i;
-                    *begin_i = *begin_j;
-                    *begin_j = temp;
-                }
-            }
-        } /*end of begin_j loop*/
-    } /*end of begin_i loop*/
-}
-
-
 /*using merge sort*/
 void vector_sort_merge(struct translation_unit *translation_unit){
 
@@ -250,7 +225,7 @@ void vector_sort_merge(struct translation_unit *translation_unit){
     mergeSort((void **) vector_begin(translation_unit->symbols), vecSize);
 }
 
-
+/*  */
 void mergeSort(void **arr, int n){
 
     int i,mid;
@@ -275,7 +250,7 @@ void mergeSort(void **arr, int n){
     free(r);
 }
 
-
+/* merging sorted arrays*/
 void merge(void **arr, void **l, int leftCount, void **r, int rightCount){
     int i,j,k;
     i = j = k = 0;
