@@ -7,7 +7,7 @@
 #include "../Header_Files/back.h" 
 #include "../Header_Files/pre.h"
 #include "../Header_Files/vector.h"
-  
+   
   
 int main(int argc, char *argv[]) {
     int i;
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     char *amFileName;
     void *const *begin;
     void *const *end;
-    struct symbol *symbol;
+    struct symbol *symbol; 
 
 
     struct translation_unit *translation_unit = (struct translation_unit*)malloc(sizeof(struct translation_unit));;
@@ -64,9 +64,7 @@ int main(int argc, char *argv[]) {
                     printf("********* printing code image:\n\n\n");
                     print_code_image(translation_unit);
                     printf("********* printing data image:\n\n\n");
-                    print_data_image(translation_unit);
-
-                   
+                    print_data_image(translation_unit); 
 
                     if(!make_ob_file(translation_unit,argv[i])){
                         printf("---------------------------------------------------------------------------------------------------- \n");
@@ -112,6 +110,7 @@ int main(int argc, char *argv[]) {
 
         vector_destroy(&translation_unit->symbols);
         vector_destroy(&translation_unit->externals);
+        free(translation_unit);
     }
     return 0;
 }
