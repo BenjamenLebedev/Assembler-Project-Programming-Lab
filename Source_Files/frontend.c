@@ -81,6 +81,7 @@ frontend_ast frontend(char* line){
         return (*ast);
     } 
 
+    
     /* found ; at the start of the line signifying it's a possible comment line*/
     /* Or if the line is just empty - only white spaces */
     if(strchr(line, ';') || (check_empty = isEmptyString(trimStartEnd(line))) ){
@@ -138,13 +139,12 @@ frontend_ast frontend(char* line){
     if((*ast).typeofLine != error || isEmptyString((*ast).errors)) (*ast).errors = NULL;
 
     /*print ast for debug*/
-    print_ast(ast,copy_line);
+    print_ast(ast,"bbbsbs");
 
     free(saveptr);
     free(copy_line);
     return (*ast);
 }
-
 
 
 int check_mid_newline(char *line,char **saveptr){
@@ -459,7 +459,7 @@ int check_string(frontend_ast *ast, char *line){
     into str*/
     str = (char*) calloc(end - start + 1,sizeof(char));
     if(!str){
-        strcpy((*ast).errors, "Memory allocation failed\n");
+        strcpy((*ast).errors, "Memory allocation failed in check_string\n");
         return 0;
     }
     memcpy(str,start,end - start);
@@ -469,8 +469,13 @@ int check_string(frontend_ast *ast, char *line){
     index = (*ast).operands.dir_ops.num_count;
 
     (*ast).operands.dir_ops.data_dir[index].type_data = string;
-    (*ast).operands.dir_ops.data_dir[index++].data_option.string = str;
-    (*ast).operands.dir_ops.num_count = index;
+    (*ast).operands.dir_ops.data_dir[index].data_option.string = (char *) calloc(strlen(str) + 1,sizeof(char));
+    if(!(*ast).operands.dir_ops.data_dir[index].data_option.string){
+        strcpy((*ast).errors, "Memory allocation failed\n");
+        return 0;
+    }
+    (*ast).operands.dir_ops.data_dir[index].data_option.string = strcpy((*ast).operands.dir_ops.data_dir[index].data_option.string,str);
+    (*ast).operands.dir_ops.num_count = ++index;
 
     free(str);
     return 1;
@@ -934,7 +939,22 @@ offset check_label_offset(frontend_ast *ast, char *str){
     return *offset_var;
 }
 
-char* trimStartEnd(char* str){
+char *trimStartEnd(char* str){
+    char *end;
+    
+    /* trimming white spaces from the beggining */
+    while (isspace(*str)) str++;
+    
+    /* trimming white spaces from the end */
+    end = str + strlen(str) - 1;
+    while(end > str && isspace((unsigned char)*end)) end--;
+
+    end[1] = '\0';
+
+    return str;
+}
+
+char* trimStartEnd_old(char* str){
     char* copy = NULL;
     int i,len;
 
@@ -960,19 +980,20 @@ char* trimStartEnd(char* str){
     return copy;
 }
 
+
+
 char* my_strtok(char *str, const char *delim,char **saveptr){
-    char *copy_str;
+
     char *str_copy = NULL; 
 
     /* this is the first interation of tokenization - happens only once*/
     if (str){
-        copy_str = (char*) calloc(strlen(str) + 1,sizeof(char));
-        if(!copy_str){
-            printf("Memory allocation for str_copyizing failed\n");
+        *(saveptr) = (char*) calloc(strlen(str) + 1,sizeof(char));
+        if(!(*(saveptr))){
+            printf("Memory allocation for str_copying failed\n");
             return NULL;
         }
-        strcpy(copy_str,str);
-        *(saveptr) = copy_str;
+        strcpy(*(saveptr),str);
     }
 
     if (!(*saveptr)) return NULL; /* the final iteration - reaching the end */
@@ -1018,8 +1039,12 @@ void frontend_free(frontend_ast *ast){
         if((*ast).operands.inst_ops[1].data_inst.offset.label) free((*ast).operands.inst_ops[1].data_inst.offset.label);
     }
     if((*ast).typeofLine == dir){
+        
         for(i = 0; i < 2*MAX_LINE_LEN; i++){
             if((*ast).operands.dir_ops.data_dir[i].offset.label) free((*ast).operands.dir_ops.data_dir[i].offset.label);
+            if((*ast).operands.dir_ops.data_dir[i].data_option.string){
+                free((*ast).operands.dir_ops.data_dir[i].data_option.string);
+            }
         }
     }
     free(ast);
