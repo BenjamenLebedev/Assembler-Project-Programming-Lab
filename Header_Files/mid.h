@@ -12,9 +12,10 @@ typedef enum symType{
         dataSymbol,
         entryCodeSymbol,
         entryDataSymbol 
-} symType;
+} symType; 
 
 struct symbol{      /* תווית *//* hello: , x: ...*/
+    int is_symbol_define;
     char symName[MAX_LABEL_LEN];
     int address;
     symType symType;
