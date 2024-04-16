@@ -95,13 +95,13 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
         for(total = i = 0; i<translation_unit->IC; i++, total++){
             convertToSecretBase(translation_unit->code_image[i], secretBase);
             printf("IC %d: %s\n",i+100, secretBase);
-            fprintf(file_ob, "%04d %s  (code image: %d)\n",total+100, secretBase, translation_unit->code_image[i]);
+            fprintf(file_ob, "%04d %s\n",total+100, secretBase);
         }
         /*now printing the data image*/
         for(i = 0; i<translation_unit->DC; i++, total++){
             convertToSecretBase(translation_unit->data_image[i], secretBase);
             printf("DC: %s\n", secretBase);
-            fprintf(file_ob, "%04d %s  (data image: %d)\n",total+100 ,secretBase, translation_unit->data_image[i]);
+            fprintf(file_ob, "%04d %s\n",total+100 ,secretBase);
         }
     }
     else{
@@ -135,7 +135,7 @@ int make_extern_file(const struct translation_unit *translation_unit, char *File
     strcat(file_ext_name, ext_extension);
 
 
-    /*only open file if there are any external symbols that are used in the assembly code*/
+    /*creating file only if there are any external symbols that are used in the assembly code*/
     external = (struct ext *) vector_begin(translation_unit->externals); 
     if(external && translation_unit->extern_use == TRUE){
         file_ext = fopen(file_ext_name, "w"); /*create file*/
@@ -191,9 +191,9 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
             printf("********* Error: cannot open file %s for writing\n", file_ent_name);
             is_error = TRUE;
         }
-        /*sorting the symbol vector by increasing addresses*/
-        /*vector_sort(translation_unit);*/
-        vector_sort_merge(translation_unit);
+
+        /*sorting the symbol vector by increasing addresses - algorithm used is merge-sort*/
+        vector_sort(translation_unit);
     }
     if(file_ent){
         printf("in extern if(file_ext) func\n");
@@ -218,53 +218,57 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
 /****************************************************************************/
 
 /*using merge sort*/
-void vector_sort_merge(struct translation_unit *translation_unit){
+void vector_sort(struct translation_unit *translation_unit){
 
     int vecSize = vector_get_item_count(translation_unit->symbols);
 
     mergeSort((void **) vector_begin(translation_unit->symbols), vecSize);
 }
 
-/*  */
+/* merging sorted arrays */
 void mergeSort(void **arr, int n){
 
     int i,mid;
-    void **l, **r;
+    void **left, **right;
 
-    if(n < 2) return;
+    if(n == 1) return; /*where there's only 1 cell - it's automatically sorted, and we stop here*/
     mid = n/2;
-    l = (void **) calloc(mid, sizeof(void *));
-    r = (void **) calloc(n-mid, sizeof(void *));
+    left = (void **) calloc(mid, sizeof(void *)); /* holds the data of the left side */
+    right = (void **) calloc(n-mid, sizeof(void *)); /* holds the data of the right side */
 
     
-    for(i = 0; i < mid; i++){
-        l[i] = arr[i];
+    for(i = 0; i < mid; i++){ /*copying the data to the left array*/
+        left[i] = arr[i];
     }
-    for(i = mid; i < n; i++){
-        r[i-mid] = arr[i];
+    for(i = mid; i < n; i++){ /*copying the data to the right array*/
+        right[i-mid] = arr[i];
     }
-    mergeSort(l, mid);
-    mergeSort(r, n-mid);
-    merge(arr, l, mid, r, n-mid);
-    free(l);
-    free(r);
+
+    mergeSort(left, mid); /*recursion left*/
+    mergeSort(right, n-mid); /*recursion right*/
+
+    merge(arr, left, mid, right, n-mid); /* merging the sorted arrays together */
+    free(left);
+    free(right);
 }
 
-/* merging sorted arrays*/
+/*merging the 2 sorted arrays*/
 void merge(void **arr, void **l, int leftCount, void **r, int rightCount){
-    int i,j,k;
-    i = j = k = 0;
+    
+    /*index i - for the left array*/
+    /*index j - for the right array*/
+    /*index k - for the merged array*/
+    int i,j,k; 
+    
+    i = j = k = 0; /*initialize the indexes*/
     while(i < leftCount && j < rightCount){
-        if(((struct symbol *)l[i])->address < ((struct symbol *)r[j])->address){
+        if(((struct symbol *)l[i])->address < ((struct symbol *)r[j])->address){ /*sorting by the addresses of the entry symbols*/
             arr[k++] = l[i++];
-        }else{
-            arr[k++] = r[j++];
         }
+        else arr[k++] = r[j++];
+        
     }
-    while(i < leftCount){
-        arr[k++] = l[i++];
-    }
-    while(j < rightCount){
-        arr[k++] = r[j++];
-    }
+    while(i < leftCount) arr[k++] = l[i++]; /* adding the rest of the left side if the right side was shorter than the left */
+    
+    while(j < rightCount) arr[k++] = r[j++]; /* adding the rest of the right side if the left side was shorter than the right */
 }
