@@ -141,115 +141,11 @@ frontend_ast frontend(char* line){
     print_ast(ast,copy_line);
 
     free(saveptr);
+    free(copy_line);
     return (*ast);
 }
 
-void print_ast(frontend_ast *ast,char *line){
 
-    int i;
-    printf("The processed line of the AST is: [%s]\n", line);
-    if((*ast).errors) printf("The AST errors are: %s\n", (*ast).errors);
-
-    printf("The AST typeofLine is: %d ", (*ast).typeofLine);
-    if((*ast).typeofLine == empty)      printf(" (empty) \n");
-    else if((*ast).typeofLine == inst)  printf(" (inst) \n");
-    else if((*ast).typeofLine == dir)   printf(" (dir) \n");
-    else if((*ast).typeofLine == define)printf(" (define) \n");
-    else if((*ast).typeofLine == error) printf(" (error) \n");
-
-    if((*ast).typeofLine != error) printf("The AST label is: %s\n", (*ast).label);
-    
-    /* inst_ops */
-    if((*ast).typeofLine == inst){
-        printf("The AST operation_code.inst_code is: %d", (*ast).operation_code.inst_code);
-        if((*ast).operation_code.inst_code      == op_mov) printf(" (mov)\n");
-        else if((*ast).operation_code.inst_code == op_cmp) printf(" (cmp)\n");
-        else if((*ast).operation_code.inst_code == op_add) printf(" (add)\n");
-        else if((*ast).operation_code.inst_code == op_sub) printf(" (sub)\n");
-        else if((*ast).operation_code.inst_code == op_not) printf(" (not)\n");
-        else if((*ast).operation_code.inst_code == op_clr) printf(" (clr)\n");
-        else if((*ast).operation_code.inst_code == op_lea) printf(" (lea)\n");
-        else if((*ast).operation_code.inst_code == op_inc) printf(" (inc)\n");
-        else if((*ast).operation_code.inst_code == op_dec) printf(" (dec)\n");
-        else if((*ast).operation_code.inst_code == op_jmp) printf(" (jmp)\n");
-        else if((*ast).operation_code.inst_code == op_bne) printf(" (bne)\n");
-        else if((*ast).operation_code.inst_code == op_red) printf(" (red)\n");
-        else if((*ast).operation_code.inst_code == op_prn) printf(" (prn)\n");
-        else if((*ast).operation_code.inst_code == op_jsr) printf(" (jsr)\n");
-        else if((*ast).operation_code.inst_code == op_rts) printf(" (rts)\n");
-        else if((*ast).operation_code.inst_code == op_hlt) printf(" (hlt)\n");
-
-        for(i = 0; i < 2; i++){
-            printf("The AST operands.inst_ops[%d].address_of_op is: %d", i, \
-            (*ast).operands.inst_ops[i].address_of_op);
-            if((*ast).operands.inst_ops[i].address_of_op == const_num)         printf(" (const_num)\n");
-            else if((*ast).operands.inst_ops[i].address_of_op == label)        printf(" (label)\n");
-            else if((*ast).operands.inst_ops[i].address_of_op == label_offset) printf(" (label_offset)\n");
-            else if((*ast).operands.inst_ops[i].address_of_op == reg)          printf(" (reg)\n");
-            else if((*ast).operands.inst_ops[i].address_of_op == none)         printf(" (none)\n");
-            printf("The AST operands.inst_ops[%d].reg_num is: %d\n", i, (*ast).operands.inst_ops[i].reg_num);
-            printf("The AST operands.inst_ops[%d].data_inst.type_data is: %d",i, \
-            (*ast).operands.inst_ops[i].data_inst.type_data);
-            if((*ast).operands.inst_ops[i].data_inst.type_data == int_data)        printf(" (int_data)\n");
-            else if((*ast).operands.inst_ops[i].data_inst.type_data == label_data) printf(" (label_data)\n");
-            else if((*ast).operands.inst_ops[i].data_inst.type_data == string)     printf(" (string)\n");
-            
-            if((*ast).operands.inst_ops[i].data_inst.type_data == int_data){
-                printf("The AST operands.inst_ops[%d].data_inst.data_option.num is: %d\n", i, \
-                (*ast).operands.inst_ops[i].data_inst.data_option.num);
-            }
-            else if((*ast).operands.inst_ops[i].data_inst.type_data == label_data){
-                printf("The AST operands.inst_ops[%d].data_inst.data_option.label is: %s\n", i, \
-                (*ast).operands.inst_ops[i].data_inst.data_option.label);
-            }
-            else if((*ast).operands.inst_ops[i].data_inst.type_data == string){
-                printf("The AST operands.inst_ops[%d].data_inst.data_option.string is: %s\n", i, \
-            (*ast).operands.inst_ops[i].data_inst.data_option.string);
-            }
-            printf("The AST operands.inst_ops[%d].data_inst.offset.label is: %s\n", i, \
-            (*ast).operands.inst_ops[i].data_inst.offset.label);
-            printf("The AST operands.inst_ops[%d].data_inst.offset.num is: %d\n", i, \
-            (*ast).operands.inst_ops[i].data_inst.offset.num);
-        }
-
-    }
-
-    /*dir_ops*/
-    else if((*ast).typeofLine == dir || (*ast).typeofLine == define){
-        printf("The AST operation_code.dir_code is: %d",  (*ast).operation_code.dir_code);
-        if((*ast).operation_code.dir_code == dir_entry)       printf(" [dir_entry]\n");
-        else if((*ast).operation_code.dir_code == dir_extern) printf(" [dir_extern]\n");
-        else if((*ast).operation_code.dir_code == dir_data)   printf(" [dir_data]\n");
-        else if((*ast).operation_code.dir_code == dir_string) printf(" [dir_string]\n");
-        else if((*ast).operation_code.dir_code == dir_define) printf(" [dir_define]\n");
-        printf("The AST operands.dir_ops.num_count is: %d\n", \
-        (*ast).operands.dir_ops.num_count);
-        for (i = 0; i < (*ast).operands.dir_ops.num_count; i++){
-            printf("The AST operands.dir_ops.data_dir[%d].type_data is: %d",i, \
-            (*ast).operands.dir_ops.data_dir[i].type_data);
-            if((*ast).operands.dir_ops.data_dir[i].type_data == int_data)        printf(" (int_data)\n");
-            else if((*ast).operands.dir_ops.data_dir[i].type_data == label_data) printf(" (label_data)\n");
-            else if((*ast).operands.dir_ops.data_dir[i].type_data == string)     printf(" (string)\n");
-            
-            if((*ast).operands.dir_ops.data_dir[i].type_data == int_data){
-                printf("The AST operands.dir_ops.data_dir[%d].data_option.num is: %d\n",i, \
-                (*ast).operands.dir_ops.data_dir[i].data_option.num);
-            }
-            else if((*ast).operands.dir_ops.data_dir[i].type_data == label_data){
-                printf("The AST operands.dir_ops.data_dir[%d].data_option.label is: %s\n",i, \
-                (*ast).operands.dir_ops.data_dir[i].data_option.label);
-            }
-            else if((*ast).operands.dir_ops.data_dir[i].type_data == string){
-                printf("The AST operands.dir_ops.data_dir[%d].data_option.string is: %s\n",i, \
-                (*ast).operands.dir_ops.data_dir[i].data_option.string);
-            }
-            printf("The AST operands.dir_ops.data_dir[%d].offset.label is: %s\n",i, \
-            (*ast).operands.dir_ops.data_dir[i].offset.label);
-            printf("The AST operands.dir_ops.data_dir[%d].offset.num is: %d\n\n",i, \
-            (*ast).operands.dir_ops.data_dir[i].offset.num);
-        }
-    }
-}
 
 int check_mid_newline(char *line,char **saveptr){
     char *token,*token1;
@@ -576,6 +472,7 @@ int check_string(frontend_ast *ast, char *line){
     (*ast).operands.dir_ops.data_dir[index++].data_option.string = str;
     (*ast).operands.dir_ops.num_count = index;
 
+    free(str);
     return 1;
 }
 
@@ -825,6 +722,8 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum, char **save
             return 0;
         }
     }
+
+    
     return 1;
 }
 
@@ -875,6 +774,7 @@ address_0_op address_type_0(frontend_ast *ast,char *str, char **saveptr){
         return (*result);
     }
 
+    free(check_offset);
     return *result;
 }
 
@@ -940,77 +840,19 @@ int is_dir(char* str){
 
 void assign_ast_dir_inst(frontend_ast *ast,line_type type,int i){
 
+    int j;
     /*just assigning the type of operation to the AST - and 
     the operation's name*/
-    if(type == inst){
-        switch (i){
-        case 0:
-            (*ast).operation_code.inst_code = op_mov;
-            break;
-        case 1:
-            (*ast).operation_code.inst_code = op_cmp;
-            break;
-        case 2:
-            (*ast).operation_code.inst_code = op_add;
-            break;
-        case 3:
-            (*ast).operation_code.inst_code = op_sub;
-            break;
-        case 4:
-            (*ast).operation_code.inst_code = op_not;
-            break;
-        case 5:
-            (*ast).operation_code.inst_code = op_clr;
-            break;
-        case 6:
-            (*ast).operation_code.inst_code = op_lea;
-            break;
-        case 7:
-            (*ast).operation_code.inst_code = op_inc;
-            break;
-        case 8:
-            (*ast).operation_code.inst_code = op_dec;
-            break;
-        case 9:
-            (*ast).operation_code.inst_code = op_jmp;
-            break;
-        case 10:
-            (*ast).operation_code.inst_code = op_bne;
-            break;
-        case 11:
-            (*ast).operation_code.inst_code = op_red;
-            break;
-        case 12:
-            (*ast).operation_code.inst_code = op_prn;
-            break;
-        case 13:
-            (*ast).operation_code.inst_code = op_jsr;
-            break;
-        case 14:
-            (*ast).operation_code.inst_code = op_rts;
-            break;
-        case 15:
-            (*ast).operation_code.inst_code = op_hlt;
-            break;
-        }
-    }
-    else if(type == dir || type == define){
-        switch (i)
-        {
-        case 0:
-            (*ast).operation_code.dir_code = dir_entry;
-            break;
-        case 1:
-            (*ast).operation_code.dir_code = dir_extern;
-            break;
-        case 2:
-            (*ast).operation_code.dir_code = dir_data;
-            break;
-        case 3:
-            (*ast).operation_code.dir_code = dir_string;
-            break;
-        case 4:
-            (*ast).operation_code.dir_code = dir_define;
+    /*in case it's an instruction*/
+    for(j = 0; (type == inst && j < OPCODE_NUM) || \
+    ((type == dir || type == define) && j < DIR_NUM); j++){
+        if(i == j){
+            if(type == inst){
+                (*ast).operation_code.inst_code = (inst_opcode) j;
+            } 
+            else if(type == dir){
+                (*ast).operation_code.dir_code = (dir_opcode) j;
+            }
             break;
         }
     }
@@ -1181,6 +1023,7 @@ void frontend_free(frontend_ast *ast){
             if((*ast).operands.dir_ops.data_dir[i].offset.label) free((*ast).operands.dir_ops.data_dir[i].offset.label);
         }
     }
+    free(ast);
 }
     
 
