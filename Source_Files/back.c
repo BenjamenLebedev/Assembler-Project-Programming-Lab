@@ -18,7 +18,7 @@ void convertToSecretBase(int number, char secretBase[]) {
     /* initialize the array with '*' */ 
     if (number < 0) {
         /* number = -number - 1;  */
-        for (i = 0; i < 7; i++) {  
+        for (i = 0; i < 7; i++) {
             secretBase[i] = '!';
         }
     } else {
@@ -95,13 +95,13 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
         for(total = i = 0; i<translation_unit->IC; i++, total++){
             convertToSecretBase(translation_unit->code_image[i], secretBase);
             printf("IC %d: %s\n",i+100, secretBase);
-            fprintf(file_ob, "%04d %s\n",total+100, secretBase);
+            fprintf(file_ob, "%04d %s  (code image: %d)\n",total+100, secretBase, translation_unit->code_image[i]);
         }
         /*now printing the data image*/
         for(i = 0; i<translation_unit->DC; i++, total++){
             convertToSecretBase(translation_unit->data_image[i], secretBase);
             printf("DC: %s\n", secretBase);
-            fprintf(file_ob, "%04d %s\n",total+100 ,secretBase);
+            fprintf(file_ob, "%04d %s  (data image: %d)\n",total+100 ,secretBase, translation_unit->data_image[i]);
         }
     }
     else{
@@ -212,6 +212,11 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
     return is_error;
 }
 
+
+/****************************************************************************/
+/**************functions for sorting the symbol(enrty) vector****************/
+/****************************************************************************/
+
 /*bubble sort*/
 void vector_sort(struct translation_unit *translation_unit){
 
@@ -236,9 +241,6 @@ void vector_sort(struct translation_unit *translation_unit){
     } /*end of begin_i loop*/
 }
 
-/****************************************************************************/
-/**************functions for sorting the symbol(enrty) vector****************/
-/****************************************************************************/
 
 /*using merge sort*/
 void vector_sort_merge(struct translation_unit *translation_unit){

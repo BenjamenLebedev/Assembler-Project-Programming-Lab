@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     char *amFileName;
     void *const *begin;
     void *const *end;
-    struct symbol *symbol; 
+    struct symbol *symbol;
 
 
     struct translation_unit *translation_unit = (struct translation_unit*)malloc(sizeof(struct translation_unit));;
@@ -64,12 +64,21 @@ int main(int argc, char *argv[]) {
                     printf("********* printing code image:\n\n\n");
                     print_code_image(translation_unit);
                     printf("********* printing data image:\n\n\n");
-                    print_data_image(translation_unit); 
+                    print_data_image(translation_unit);
+
+                   
 
                     if(!make_ob_file(translation_unit,argv[i])){
                         printf("---------------------------------------------------------------------------------------------------- \n");
                         printf("------------------------------------  make_ob_file completed successfully -------------------------- \n");
                         printf("---------------------------------------------------------------------------------------------------- \n");
+                         /***********temp debug*/
+                        if(!makeBinaryFile(translation_unit,argv[i])){
+                            printf("---------------------------------------------------------------------------------------------------- \n");
+                            printf("------------------------------------  makeBinaryFile completed successfully -------------------------- \n");
+                            printf("---------------------------------------------------------------------------------------------------- \n");
+                        }
+                        /***********************/
                         if(!make_extern_file(translation_unit,argv[i])){
                             printf("---------------------------------------------------------------------------------------------------- \n");
                             printf("-----------------------------  make_extern_file completed successfully ----------------------------- \n");

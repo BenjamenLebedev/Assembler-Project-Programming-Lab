@@ -5,7 +5,7 @@ FOLDERNAME = Assembler-Project
 SRCS = ${shell ls ./Source_Files/*.c}
 OBJS = $(SRCS:.c=.o)
 LIB = ./Header_Files/*.h 
-OB_FILES = ${shell ls *.am *.ob *.ent *.ext *.txt}
+OUT = ${shell ls *.am *.ob *.ent *.ext *.txt}
 # Executable
 TARGET = mid
 
@@ -22,4 +22,4 @@ $(TARGET): $(OBJS) $(LIB)
 
 # Clean up object files and executable
 clean:
-	rm -f $(OBJS) $(TARGET) $(OB_FILES)
+	rm -f $(OBJS) $(TARGET) $(OUT)

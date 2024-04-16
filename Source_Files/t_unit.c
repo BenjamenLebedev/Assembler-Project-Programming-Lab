@@ -62,11 +62,11 @@ void free_translation_unit(struct translation_unit *unit) {
 }
 
 void printBinary14(int num) {
-    int i;
+    int i,bit;
     /* start from the most significant bit and print each bit */
-    for (i = 13; i >= 0; i--) {
+    for (i = WORD_LEN - 1; i >= 0; i--) {
         /* check if the i-th bit is set or not */
-        int bit = (num >> i) & 1;
+        bit = (num >> i) & 1;
         printf("%d", bit);
     }
     printf("\n");
@@ -130,3 +130,77 @@ void print_data_image(struct translation_unit *unit) {
     }
     printf("\n");
 }
+
+/*******************************************************************/
+/*******************************************************************/
+/*******************************************************************/
+
+/*temp debug functions */
+
+
+int makeBinaryFile(const struct translation_unit *unit, char *FileName) {
+    int i,total,is_error = FALSE;
+    FILE *file;
+    char *file_name,*binary_code;
+    char *extension = ".binss";
+    file_name = (char *)malloc(strlen(FileName) + strlen(extension) + 1);
+    strcpy(file_name, FileName);
+    strcat(file_name, extension);
+    file = fopen(file_name, "w+");
+    if (file == NULL) {
+        printf("Error: Failed to create binary file.\n");
+        return TRUE;
+    }
+
+    fprintf(file,"\n");
+    for (total = i = 0; i < unit->IC; i++,total++) {
+        binary_code = binary_seq(unit->code_image[i]);
+        fprintf(file,"  %d  %s  (%d)\n", total, binary_code,unit->code_image[i]);
+    }
+    for (i = 0; i < unit->DC; i++,total++) {
+        binary_code = binary_seq(unit->data_image[i]);
+        fprintf(file,"  %d  %s  (%d)\n", total, binary_code,unit->data_image[i]);
+    }
+
+    fclose(file);
+    free(file_name);
+    return is_error;
+}
+
+char *binary_seq(int num) {
+    char *binary; 
+    int i;
+
+
+    binary = (char *) malloc(15 * sizeof(char));
+    if(binary == NULL){
+        printf("Error: Memory allocation failed for binary_seq.\n");
+        return NULL;
+    }
+
+    /*initializing all to zeros*/
+    for (i = 0; i < WORD_LEN; i++) {
+        binary[i] = '0';
+    }
+
+    /*converting the number to binary*/
+    for (i = WORD_LEN - 1; i >= 0; i--) {
+        binary[i] = ((num >> i) & 1) + '0';
+    }
+    binary[14] = '\0';
+
+    reverse(binary);    
+    return binary;
+}
+
+void reverse(char *str) {
+    int i, j;
+    char temp;
+    for (i = 0, j = strlen(str) - 1; i < j; i++, j--) {
+        temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+    }
+}
+
+/*******************************************************************/
