@@ -989,10 +989,9 @@ char* my_strtok(char *str, const char *delim,char **saveptr){
 }
 
 int isEmptyString(char* str){
-    /*trimming just to be sure. if even after trimming it's 
-    empty - it was just white spaces*/
-    str = trimStartEnd(str); 
+    
     if(strcmp(str,"") == 0) return 1;
+    
     return 0;
 }
 
