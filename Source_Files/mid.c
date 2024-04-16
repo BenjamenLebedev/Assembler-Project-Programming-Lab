@@ -11,7 +11,7 @@
 void * symbol_ctor (const void * copy) {
     struct symbol * new_p = (struct symbol *) malloc(sizeof(struct symbol));
     if(new_p == NULL) 
-        return NULL;  
+        return NULL;   
     return memcpy(new_p,copy,sizeof(struct symbol));
 } 
 /*delete function for vector  */
@@ -107,6 +107,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         symbol = (struct symbol *) malloc(sizeof(struct symbol)); 
         symbol->address =0;
         strcpy(symbol->symName,"\0");
+        symbol->is_symbol_define = FALSE;
 
         /* ast = front_end_func_simulator_multi_text(line_counter); */
         printf("\n\n\n\n********* processing line number: %d\n",line_counter);
@@ -230,6 +231,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                 /* symbol->symType = ast.operation_code.dir_code; */
                 symbol->symType = dataSymbol;
                 symbol->address = ast.operands.dir_ops.data_dir[1].data_option.num;
+                symbol->is_symbol_define = TRUE;
                 vector_insert(translation_unit->symbols, symbol);
             }
 
@@ -256,12 +258,19 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                 printf("********* error: symbol was declared but not defined: %s\n", symbol->symName);
                 is_error = TRUE;
             }
-            if (symbol->symType == dataSymbol || symbol->symType == entryDataSymbol) {
+            if ((symbol->symType == dataSymbol || symbol->symType == entryDataSymbol) && (symbol->is_symbol_define == FALSE)) {
                 symbol->address += ic;
             }
         }   
     }
+
     printf("\n");
+                    VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
+                    if (*begin) {
+                    symbol = (struct symbol *) *begin;
+                    printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
+                    }
+                }    
 
 
 
@@ -277,7 +286,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         ast = frontend(line);
         
             /*incase of declaration data/string, update the DC accordingly */
-        printf("//////on line: %d in second while in first pass\n", line_counter);    
+        printf("//////on line: %d in second while in first pass\n", line_counter);        
         if (ast.typeofLine == dir && (ast.operation_code.dir_code == dir_data || ast.operation_code.dir_code == dir_string)) {
             printf("/////////////////////////////in data_image adding, and updating DC\n");
             for(i=0; i<ast.operands.dir_ops.num_count; i++){
@@ -318,7 +327,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
 
 
 
-    free(symbol); /*can cause probemlms*/
+   /*  free(symbol);  *//*can cause probemlms*/
     return is_error;
 }
 
