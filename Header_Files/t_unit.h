@@ -43,10 +43,4 @@ void print_data_image(struct translation_unit *unit);
 
 void free_translation_unit(struct translation_unit *unit);
 void printBinary14(int num);
-
-/******************* temp functions for check and debug*/
-
-int makeBinaryFile(const struct translation_unit *unit, char *FileName);
-char *binary_seq(int num);
-void reverse(char *str);
 #endif 
