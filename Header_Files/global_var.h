@@ -32,7 +32,7 @@ enum {
 /* the number of instruction operation codes */
 #define OPCODE_NUM 16
 
-/* the number of directives */
+/* the number of legal directives for the assembler */
 #define DIR_NUM 5
 
 /*The starting value of the instruction counter*/
