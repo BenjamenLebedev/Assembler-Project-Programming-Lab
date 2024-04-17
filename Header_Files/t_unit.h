@@ -2,7 +2,7 @@
 #ifndef T_UNIT_H
 #define T_UNIT_H
 
-struct translation_unit {
+struct translation_unit { 
     int *code_image;
     int *data_image;
     int IC; /* Instruction Counter */
@@ -16,31 +16,36 @@ struct translation_unit {
  
 
 /**
- * @brief Creates a new translation unit.
+ * @brief creates a new translation unit.
  * 
  * @return struct translation_unit* Pointer to the newly created translation unit.
  */
 struct translation_unit *create_translation_unit();
 
 /**
- * @brief Adds an integer value to the code image of the translation unit.
+ * @brief adds an integer to the code image of the translation unit.
  * 
- * @param unit Pointer to the translation unit.
- * @param value Integer value to add.
+ * @param unit pointer to the translation unit.
+ * @param value int value to add.
  */
 void add_to_code_image(struct translation_unit *unit, int value);
 
 /**
- * @brief Adds an integer value to the data image of the translation unit.
+ * @brief adds an integer to the data image of the translation unit.
  * 
- * @param unit Pointer to the translation unit.
- * @param value Integer value to add.
+ * @param unit pointer to the translation unit.
+ * @param value int value to add.
  */
 void add_to_data_image(struct translation_unit *unit, int value);
 
+/**
+ * @brief function that frees the memory of the transaltion unit
+ * 
+ * @param unit the translation unit we want to delete and free it memory.
+ */
+void free_translation_unit(struct translation_unit *unit);
+
 void print_code_image(struct translation_unit *unit);
 void print_data_image(struct translation_unit *unit);
-
-void free_translation_unit(struct translation_unit *unit);
 void printBinary14(int num);
 #endif 
