@@ -22,21 +22,28 @@ op_code_args op_codes1[] = {
 
 int main(){
 
-    frontend_ast *ast;
-    char line1[] = "   MAIN:  .data 2,3,LIST[x]  \n";
+    FILE *input;
+    frontend_ast *ast = NULL;
+    char line1[MAX_LINE_LEN] = " MAIN:	mov r3, LIST[sz] ";
+    char line[MAX_LINE_LEN];
+    int series;
 
+    series = 0;
+    if(series){
+        input = fopen("psNEW.as", "r");
 
-
-    ast = (frontend_ast *) calloc(1, sizeof(frontend_ast));
-    if(ast == NULL){ 
-        fprintf(stderr, "Memory allocation failed\n");
-        return 1;
+        while(fgets(line, sizeof(line), input) != NULL){
+            ast = frontend(line);
+            frontend_free(ast);
+        }
+        fclose(input);
     }
-    *ast = frontend(line1);
-
-    /*print_ast(ast);*/
-
-    frontend_free(ast);
+    else if(!series){
+        ast = frontend(line1);
+        frontend_free(ast);
+    }
+    
+    
     return 0;
 }
 
@@ -44,7 +51,7 @@ void print_ast(frontend_ast *ast,char *line){
 
     int i;
     printf("The processed line of the AST is: [%s]\n", line);
-    if((*ast).errors) printf("The AST errors are: %s\n", (*ast).errors);
+    if(!isEmptyString((*ast).errors)) printf("The AST errors are: %s\n", (*ast).errors);
 
     printf("The AST typeofLine is: %d ", (*ast).typeofLine);
     if((*ast).typeofLine == empty)      printf(" (empty) \n");
