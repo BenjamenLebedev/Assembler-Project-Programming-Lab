@@ -24,7 +24,7 @@ enum {
 #define WORD_LEN 14
 
 /* Initial length for error string */
-#define INIT_ERROR_LEN 200
+#define INIT_ERROR_LEN 300
 
 /* Total number of registers allowed in the system*/
 #define REG_NUM 8
