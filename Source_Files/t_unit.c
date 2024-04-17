@@ -2,10 +2,12 @@
 #include "../Header_Files/global_var.h"
 #include "../Header_Files/t_unit.h" 
 #include "../Header_Files/vector.h"
-
+ 
 struct translation_unit *create_translation_unit() {
+    /*allocate memory for the translation unit*/
     struct translation_unit *unit = (struct translation_unit *)malloc(sizeof(struct translation_unit));
-    if (unit != NULL) {
+    if (unit != NULL) { /*check if memory allocation succeeded*/
+        /*initialize values*/
         unit->code_image = NULL;
         unit->data_image = NULL;
         unit->IC = 0; 
@@ -23,6 +25,7 @@ void add_to_code_image(struct translation_unit *unit, int value) {
         printf("Error: Invalid translation unit.\n");
         return;
     }
+    /*dynamic allocation of memory*/
     if (unit->IC % 10 +1 == 1) {    
         int *temp = (int *)realloc(unit->code_image, (unit->IC + 10 - 1) * sizeof(int));
         printf("relocating memory in add_to_code_image func\n");
@@ -30,6 +33,7 @@ void add_to_code_image(struct translation_unit *unit, int value) {
             printf("Error: Memory reallocation failed for code_image.\n");
             return;
         }
+        /*update code_image pointer*/
         unit->code_image = temp;
     }
     unit->code_image[unit->IC] = value;
@@ -40,12 +44,14 @@ void add_to_data_image(struct translation_unit *unit, int value) {
         printf("Error: Invalid translation unit.\n");
         return;
     }
+    /*dynamic allocation of memory*/
     if (unit->DC % 10 +1== 1) {
         int *temp = (int *)realloc(unit->data_image, (unit->DC + 10 - 1) * sizeof(int));
         if (temp == NULL) {
             printf("Error: Memory reallocation failed for data_image.\n");
             return;
         }
+        /*update code_image pointer*/
         unit->data_image = temp;
     }
     unit->data_image[unit->DC] = value;
@@ -53,6 +59,7 @@ void add_to_data_image(struct translation_unit *unit, int value) {
 
 void free_translation_unit(struct translation_unit *unit) {
     if (unit != NULL) {
+        /*free everything*/
         free(unit->code_image);
         free(unit->data_image);
         vector_destroy(&unit->symbols);
@@ -62,11 +69,11 @@ void free_translation_unit(struct translation_unit *unit) {
 }
 
 void printBinary14(int num) {
-    int i,bit;
+    int i;
     /* start from the most significant bit and print each bit */
-    for (i = WORD_LEN - 1; i >= 0; i--) {
+    for (i = 13; i >= 0; i--) {
         /* check if the i-th bit is set or not */
-        bit = (num >> i) & 1;
+        int bit = (num >> i) & 1;
         printf("%d", bit);
     }
     printf("\n");

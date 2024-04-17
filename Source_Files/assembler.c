@@ -9,7 +9,7 @@
 #include "../Header_Files/vector.h"
    
   
-int mainss(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     int i;
     FILE *amFile;
     char *amFileName;
@@ -46,7 +46,7 @@ int mainss(int argc, char *argv[]) {
         else{
             if(!firstPass(translation_unit, amFileName, amFile)){ 
                 printf("********* printing symbols inside translation_unit:\n");
-                VECTOR_FOR_EACH(begin, end, translation_unit->symbols) {
+                LOOP(begin, end, translation_unit->symbols) {
                     if (*begin) {
                     symbol = (struct symbol *) *begin;
                     printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);

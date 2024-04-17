@@ -94,6 +94,7 @@ void displayMacros(const struct macro* macros) {
     if(!info){
         printf("info is NULL in free_macros\n");
     }
+    /*irritates throw the list to free all the macro information*/
         while (info != NULL) {
             free(info);
             info = next_info; 
@@ -102,11 +103,13 @@ void displayMacros(const struct macro* macros) {
             }
         }
 }
+
 void free_Macros(struct macro* macros) {
     struct macro* next_macro = macros->next;
     if(!macros){
         printf("macros is NULL in free_macros\n");
     }
+    /*irritates throw the list to free all the macros*/
     while (macros != NULL) {
         freeMacro_information(macros->info_head);
         free(macros);
@@ -152,27 +155,7 @@ struct macro * pointer_to_last_macro(struct macro** macros){
     return current;
 } 
 
-
-/* struct macro * is_string_macro(char * string, struct macro** original_macros){
-    struct macro* macros = *original_macros;
-    printf("in is_string_macro func/////\n");
-    printf("string: %s\n", string);
-    if(!macros){
-        printf("*macros is Null\n");
-    }
-    while(macros){
-        printf("macros->name: %s", macros->name);
-        if(strcmp(macros->name, string) == 0){
-            printf("is_string_macro returns macros\n");
-            return macros;
-        }
-        macros = macros->next;
-    }
-    printf("is_string_macro returns null\n");
-    return NULL;
-}
- */
-
+ 
 struct macro * is_string_macro(char * string, struct macro** original_macros){
     int i;
     struct macro* macros = *original_macros;
@@ -325,32 +308,3 @@ char * preprocessor(char * name){
     /*NEED TO  FREE FILE AM NAME */
 
 }
-
-
-/* int main() {
-    char t[] = "text";
-    char * a = preprocessor(t);
-    if(!a){
-        printf("a is null");
-    }
-    printf("%s\n", a);
-    return 0;
-    
-
-}  */
-
-/*     struct macro* macros = NULL;
-
-    addMacro(&macros, "Macro1");
-    addMacroInformation(macros, "Line 1 for hello1");
-    addMacroInformation(macros, "Line 2 for hello2 ");
-
-    addMacro(&macros, "Macro2");
-    addMacroInformation(macros->next, "Line 1 for Macro2");
-    addMacroInformation(macros->next, "Line 2 for Macro2");
-    addMacroInformation(macros->next, "Line 3 for Macro2");
-
-    displayMacros(macros);
-
-    freeMemory(macros);
- */
