@@ -20,22 +20,19 @@ op_code_args op_codes1[] = {
     {"hlt",  0}  
 };
 
-int mainss(){
+int main(){
 
     frontend_ast *ast;
-    char line1[] = "   MAIN:  .string \"asdasd\" \n";
-    char *line;
+    char line1[] = "   MAIN:  .data 2,3,LIST[x]  \n";
 
-    line = line1;
 
-    /*“abcdef”*/
 
     ast = (frontend_ast *) calloc(1, sizeof(frontend_ast));
     if(ast == NULL){ 
         fprintf(stderr, "Memory allocation failed\n");
         return 1;
     }
-    *ast = frontend(line);
+    *ast = frontend(line1);
 
     /*print_ast(ast);*/
 
