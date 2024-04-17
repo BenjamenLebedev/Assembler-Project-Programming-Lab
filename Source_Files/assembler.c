@@ -9,7 +9,7 @@
 #include "../Header_Files/vector.h"
    
   
-int main(int argc, char *argv[]) {
+int mainss(int argc, char *argv[]) {
     int i;
     FILE *amFile;
     char *amFileName;
