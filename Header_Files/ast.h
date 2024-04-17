@@ -127,7 +127,7 @@ typedef struct dir_op{
 
 /* The structure of the AST itself */
 typedef struct frontend{
-    char *errors; /*NULL if no errors are found*/
+    char errors[INIT_ERROR_LEN]; /*NULL if no errors are found*/
     char label[MAX_LABEL_LEN + 1]; /*the label of the entire line*/
     line_type typeofLine; /*either instruction or directive*/
 
@@ -156,9 +156,9 @@ typedef struct frontend{
  * performs lexical and syntactic analysis.
  * 
  * @param line the string which represents the line of assembly code.
- * @return frontend_ast the AST which describes 
+ * @return frontend_ast* a pointer to the AST which describes the line of assembly code 
  */
-frontend_ast frontend(char* line);
+frontend_ast *frontend(char* line);
 
 /**
  * @brief This function initializes the AST structure.
