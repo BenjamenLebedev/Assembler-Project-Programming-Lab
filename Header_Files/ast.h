@@ -182,20 +182,18 @@ void frontend_free(frontend_ast *ast);
  * @param ast The AST of the line
  * @param line The line of assembly code
  * @param arg Flag that indicates whether the label an argument or it is a label of a line. 1 if it is an argument, 0 otherwise.
- * @param saveptr a pointer to the that is used during tokenization of a string.
  * @return char* The label if it is legal, NULL otherwise.
  */
-char *check_legal_label(frontend_ast *ast, char *str,int arg,char **saveptr);
+char *check_legal_label(frontend_ast *ast, char *str,int arg);
 
 /**
  * @brief This function checks whether the line is a directive line, and if it is, it processes the directive in it.
  * 
  * @param ast the AST structure of the line into which the directive will be processed.
  * @param line the line of assembly code to be processed.
- * @param saveptr A pointer to the that is used during tokenization of a string.
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_directive(frontend_ast *ast, char *line,char **saveptr);
+int check_directive(frontend_ast *ast, char *line);
 
 /**
  * @brief This function checks whether the line is an instruction line, 
@@ -203,10 +201,9 @@ int check_directive(frontend_ast *ast, char *line,char **saveptr);
  * 
  * @param ast the AST structure of the line into which the instruction will be processed.
  * @param line the line of assembly code to be processed.
- * @param saveptr A pointer to the that is used during tokenization of a string.
  * @return int 1 if the instruction is legal, 0 otherwise.
  */
-int check_instruction(frontend_ast *ast, char *line, char **saveptr);
+int check_instruction(frontend_ast *ast, char *line);
 
 /**
  * @brief this function checks whether a string is empty or not.+
@@ -308,9 +305,9 @@ int check_brackets(char *str,char c);
  * 
  * @param ast The AST of the line
  * @param str The string containing the possible label offset.
- * @return offset the legal offset if the check was legal, and an offset with label of NULL otherwise.
+ * @return *offset pointer to the legal offset structure if the check was legal, and an offset with label of NULL otherwise.
  */
-offset check_label_offset(frontend_ast *ast, char *str);
+offset *check_label_offset(frontend_ast *ast, char *str);
 
 /**
  * @brief Assigns the directive/instruction to the AST structure as a line_type enumeration.
@@ -326,20 +323,18 @@ void assign_ast_dir_inst(frontend_ast *ast,line_type type,int i);
  * 
  * @param ast the AST structure of the assembley code line into which the directive will be processed.
  * @param line the line of assembly code to be processed. 
- * @param saveptr A pointer to the that is used during tokenization of a string.
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_entry_extern(frontend_ast *ast, char *line, char **saveptr);
+int check_entry_extern(frontend_ast *ast, char *line);
 
 /**
  * @brief This function checks the legallity for the operands of the .data directive. 
  * 
  * @param ast the AST structure of the assembley code line into which the directive will be processed.
- * @param line the line of assembly code to be processed. 
- * @param saveptr A pointer to the that is used during tokenization of a string.
+ * @param line the line of assembly code to be processed.
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_data_dir(frontend_ast *ast, char *line, char **saveptr);
+int check_data_dir(frontend_ast *ast, char *line);
 
 /**
  * @brief This function checks the legallity for the operands of the .string directive. 
@@ -355,10 +350,9 @@ int check_string(frontend_ast *ast, char *line);
  * 
  * @param ast the AST structure of the assembley code line into which the directive will be processed.
  * @param line the line of assembly code to be processed. 
- * @param saveptr A pointer to the that is used during tokenization of a string.
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_define(frontend_ast *ast, char *line, char **saveptr);
+int check_define(frontend_ast *ast, char *line);
 
 /**
  * @brief This function checks the legallity for the operands of the instruction. 
@@ -366,10 +360,9 @@ int check_define(frontend_ast *ast, char *line, char **saveptr);
  * @param ast the AST structure of the assembley code line into which the directive will be processed.
  * @param line the line of assembly code to be processed. 
  * @param opcodeNum the number of the instruction in the array of the operations for instructions.
- * @param saveptr A pointer to the that is used during tokenization of a string.
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum, char **saveptr);
+int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum);
 
 /**
  * @brief this function checks whether the recieved string is in the format of
@@ -379,19 +372,18 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum, char **save
  * 
  * @param ast the AST of the assembly code line
  * @param str the string to be examined which possibly contains the desired format.
- * @param saveptr A pointer to the that is used during tokenization of a string.
- * @return address_0_op 
+ * @return address_0_op pointer to the structure that contains all the information about an address zero type operand.
+ * NULL if the string is not in the format.
  */
-address_0_op address_type_0(frontend_ast *ast,char *str, char **saveptr);
+address_0_op *address_type_0(frontend_ast *ast,char *str);
 
 /**
  * @brief This function checks whether there is a newline character in the middle of the recieved string.
  * 
  * @param line the string to be examined.
- * @param saveptr the pointer to the that is used during tokenization of a string.
  * @return int returns 0 if there is no newline character in the middle of the string, 1 otherwise.
  */
-int check_mid_newline(char *line,char **saveptr);
+int check_mid_newline(char *line);
 
 /**
  * @brief prints the AST - including all the substructures
@@ -401,8 +393,27 @@ int check_mid_newline(char *line,char **saveptr);
  */
 void print_ast(frontend_ast *ast,char *line);
 
+/**
+ * @brief this function creates a char** pointer via memory allocation
+ * for the my_strtok function.
+ * 
+ * @param saveptr the pointer to which memory is to be allocated.
+ * @return char** the created saveptr. NULL if the allocation failed.
+ */
+char **create_saveptr(char **saveptr);
+
 /*************************************************************************************/
 /*************************************************************************************/
 /*************************************************************************************/
+
+/*************************************************************************************/
+/********************MACROS - for better handling AST variables***********************/
+/*************************************************************************************/
+
+/*shortening part of the structure chain of the AST for the data for ea*/
+#define DIR_OP_DATA(ast,index) (*ast).operands.dir_ops.data_dir[index]
+
+
+#define INST_OP_DATA(ast,index) (*ast).operands.inst_ops[index].data_inst
 
 #endif
