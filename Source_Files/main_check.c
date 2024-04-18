@@ -1,7 +1,38 @@
 #include "../Header_Files/ast.h"
 #include "../Header_Files/global_var.h"
 
-op_code_args op_codes1[] = {
+
+
+int main(){
+
+    FILE *input;
+    frontend_ast *ast = NULL;
+    char line1[MAX_LINE_LEN] = " MAN: .data 2,xs,  LIS[ x ] ";
+    char line[MAX_LINE_LEN];
+    int series;
+
+    series = 1;
+    if(series == 1){
+        input = fopen("psNEW.as", "r");
+
+        while(fgets(line, sizeof(line), input) != NULL){
+            ast = frontend(line);
+            frontend_free(ast);
+        }
+        fclose(input);
+    }
+    else if(series == 0){
+        ast = frontend(line1);
+        frontend_free(ast);
+    }
+    
+    
+    return 0;
+}
+
+void print_ast(frontend_ast *ast,char *line){
+
+    op_code_args op_codes1[] = {
     {"mov",  2}, 
     {"cmp",  2},  
     {"add",  2}, 
@@ -18,36 +49,7 @@ op_code_args op_codes1[] = {
     {"jsr",  1}, 
     {"rts",  0}, 
     {"hlt",  0}  
-};
-
-int main(){
-
-    FILE *input;
-    frontend_ast *ast = NULL;
-    char line1[MAX_LINE_LEN] = " MAIN:	mov r3, LIST[sz] ";
-    char line[MAX_LINE_LEN];
-    int series;
-
-    series = 0;
-    if(series){
-        input = fopen("psNEW.as", "r");
-
-        while(fgets(line, sizeof(line), input) != NULL){
-            ast = frontend(line);
-            frontend_free(ast);
-        }
-        fclose(input);
-    }
-    else if(!series){
-        ast = frontend(line1);
-        frontend_free(ast);
-    }
-    
-    
-    return 0;
-}
-
-void print_ast(frontend_ast *ast,char *line){
+    };
 
     int i;
     printf("The processed line of the AST is: [%s]\n", line);
