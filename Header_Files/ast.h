@@ -305,7 +305,8 @@ int check_brackets(char *str,char c);
  * 
  * @param ast The AST of the line
  * @param str The string containing the possible label offset.
- * @return *offset pointer to the legal offset structure if the check was legal, and an offset with label of NULL otherwise.
+ * @return *offset pointer to the legal offset structure if the check was legal, 
+ * and an offset with label of NULL if it's not an offset, and NULL if memory allocation in it failed.
  */
 offset *check_label_offset(frontend_ast *ast, char *str);
 
@@ -393,14 +394,12 @@ int check_mid_newline(char *line);
  */
 void print_ast(frontend_ast *ast,char *line);
 
-/**
- * @brief this function creates a char** pointer via memory allocation
- * for the my_strtok function.
- * 
- * @param saveptr the pointer to which memory is to be allocated.
- * @return char** the created saveptr. NULL if the allocation failed.
- */
+/*this function creates a char** pointer via memory allocation
+ * for the my_strtok function.*/
 char **create_saveptr(char **saveptr);
+
+/*like strcpy but with dynamic allocation of space in dest*/
+char *copystr_calloc(frontend_ast *ast, char* dest, const char *src);
 
 /*************************************************************************************/
 /*************************************************************************************/
