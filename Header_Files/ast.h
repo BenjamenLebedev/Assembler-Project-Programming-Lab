@@ -222,12 +222,12 @@ int isEmptyString(char* str);
 char* trimStartEnd(char* str);
 
 /**
- * @brief This function tokenizes the string according to the delimiters and returns the next token. Similar to string.h strtok function but
- * this function is thread safe - no use of static variables.
+ * @brief This function tokenizes the string according to the delimiters and returns the next token. 
+ * Similar to string.h strtok function but without using static variables.
  * 
  * @param str the string to be tokenized
  * @param delim the delimiters
- * @param saveptr the pointer to the string that is being tokenized - saving the position of the next token. not to be altered to preserve tokenization.
+ * @param saveptr a pointer designed to save the position of the next token
  * @return char* the next token
  */
 char* my_strtok(char *str, const char *delim,char **saveptr);
@@ -392,7 +392,7 @@ int check_mid_newline(char *line);
  * @param ast the AST to be printed
  * @param line the line of the assembly code the AST describes
  */
-void print_ast(frontend_ast *ast,char *line);
+void print_ast(frontend_ast *ast,const char *line);
 
 /*this function creates a char** pointer via memory allocation
  * for the my_strtok function.*/
@@ -400,6 +400,9 @@ char **create_saveptr(char **saveptr);
 
 /*like strcpy but with dynamic allocation of space in dest*/
 char *copystr_calloc(frontend_ast *ast, char* dest, const char *src);
+
+/*freeing the provided offset structure*/
+void free_offset_struct(offset *offset_var);
 
 /*************************************************************************************/
 /*************************************************************************************/
@@ -409,10 +412,19 @@ char *copystr_calloc(frontend_ast *ast, char* dest, const char *src);
 /********************MACROS - for better handling AST variables***********************/
 /*************************************************************************************/
 
-/*shortening part of the structure chain of the AST for the data for ea*/
+/*shortening part of the structure chain of the AST for the data of directives*/
 #define DIR_OP_DATA(ast,index) (*ast).operands.dir_ops.data_dir[index]
 
-
+/*shortening part of the structure chain of the AST for the data of instructions*/
 #define INST_OP_DATA(ast,index) (*ast).operands.inst_ops[index].data_inst
+
+#define FOUND_ALLOC_ERROR strstr(ast->errors,"Memory allocation")
+
+#define FREE_SAVEPTR(saveptr,movptr) {\
+    if(saveptr){\
+        *saveptr = movptr;\
+        free(saveptr);\
+    }\
+    }
 
 #endif
