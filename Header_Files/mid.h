@@ -4,7 +4,9 @@
 #include "vector.h"
 #include "global_var.h" 
 #include "t_unit.h"
- 
+
+#define CHUNK_READ 300
+
 typedef enum symType{ 
         entrySymbol,
         externSymbol,
@@ -27,6 +29,14 @@ struct ext{
     char *ext_name;
 };
 
+/**
+ * @brief reads a line from the input file until a new line character is encountered or the end of the file is reached.
+ * 
+ * @param c the first character of the line. serves to check EOF is reached.
+ * @param file the file from which we read the line.
+ * @return char* string containing the line read from the input.
+ */
+char* read_line_input(char c,FILE* file);
 
 /**
  * @brief constructor function for a symbol struct
