@@ -33,7 +33,7 @@ frontend_ast *frontend(char* line){
     /* Allocate memory for the AST */
     ast = (frontend_ast *) calloc(1, sizeof(frontend_ast));
     if(ast == NULL){
-        fprintf(stderr, "Memory allocation error\n");
+        fprintf(stderr, "Error: Memory allocation failed for the AST structure\n");
         return ast;
     }
 
@@ -44,13 +44,14 @@ frontend_ast *frontend(char* line){
     if(strlen(line) > MAX_LINE_LEN){
         strcpy(ast->errors, "Assembly line too long - maximal length is 82 characters\n");
         ast->typeofLine = error;
+        print_ast(ast,line);
         return ast;
     }
 
     /*creating a copy of the line for printing purposes or for removing newline characters*/
     copy_line = (char*) calloc(strlen(line) + 1, sizeof(char));
     if(copy_line == NULL){
-        strcpy(ast->errors, "Memory allocation error\n");
+        strcpy(ast->errors, "Error: Memory allocation failed for copy of the assembly line string\n");
         ast->typeofLine = error;
         return ast;
     }
@@ -65,24 +66,27 @@ frontend_ast *frontend(char* line){
         strcpy(ast->errors, "a newline character appears in the middle of the line\n");
         ast->typeofLine = error;
         print_ast(ast,copy_line);
+        free(copy_line);
         return ast;
     } 
 
     
     /* found ; at the start of the line signifying it's a possible comment line*/
     /* Or if the line is just empty - only white spaces */
-    if(strchr(line, ';') || (check_empty = isEmptyString(trimStartEnd(line))) ){
-        if(line[0] == ';' || check_empty){
-            ast->errors[0] = '\0';
-            ast->typeofLine = empty;
-            print_ast(ast,copy_line);
-            return ast;
-        }
-        else{
-            strcpy(ast->errors, "the character ; appears illegally in the middle of the line\n");
-            ast->typeofLine = error;
-            return ast;
-        }
+    check_empty = isEmptyString(trimStartEnd(line));
+    if(line[0] == ';' || check_empty){
+        ast->errors[0] = '\0';
+        ast->typeofLine = empty;
+        print_ast(ast,copy_line);
+        free(copy_line);
+        return ast;
+    }
+    else if(strchr(line,';') && line[0] != ';'){
+        strcpy(ast->errors, "the character ; appears illegally in the middle of the line\n");
+        ast->typeofLine = error;
+        print_ast(ast,copy_line);
+        free(copy_line);
+        return ast;
     }
 
     /* trimming the line from extra spaces at the start and at the end - since those 
@@ -90,11 +94,13 @@ frontend_ast *frontend(char* line){
     line = trimStartEnd(line);
 
     /* found : signifying there's a possible label at the start of the line*/
+    label = NULL;
     if((char_skip = strchr(line, ':'))){
         if(!(label = check_legal_label(ast, line, 0))){ /*checking the label*/
             if(ast->errors[0] == '\0') strcpy(ast->errors, "Illegal declaration of label\n");
             ast->typeofLine = error;
             ast->label[0] = '\0';
+            free(copy_line);
             return ast;
         }
         else strcpy(ast->label, label);
@@ -109,6 +115,8 @@ frontend_ast *frontend(char* line){
         check_dir = check_directive(ast, line); /*checking legallity of directive*/
         if(!check_dir){
             ast->typeofLine = error;
+            print_ast(ast,copy_line);
+            free(copy_line);
             return ast;
         }
     }
@@ -118,6 +126,8 @@ frontend_ast *frontend(char* line){
         check_inst = check_instruction(ast, line);
         if(!check_inst){
             ast->typeofLine = error;
+            print_ast(ast,copy_line);
+            free(copy_line);
             return ast;
         }
     }
@@ -128,6 +138,7 @@ frontend_ast *frontend(char* line){
     /*print ast for debug*/
     print_ast(ast,copy_line);
 
+    if(label) free(label);
     free(copy_line);
 
     return ast;
@@ -136,37 +147,44 @@ frontend_ast *frontend(char* line){
 
 char *check_legal_label(frontend_ast *ast, char *str,int arg){
 
-    char *token,*label;
+    char *token,*label = NULL;
     int i,error_flag; /*error_flag - 1 means error exists. 0 means not*/
     /*saveptr - to serve as the starting point in tokenation
-    movptr - saves the string and draws out the tokens in tokenation*/
+    movptr - saves the string and draws out the tokens in in each iteration*/
     char **saveptr = NULL,movptr[MAX_LINE_LEN];
-    
-    saveptr = create_saveptr(saveptr);
-    if(!saveptr) return NULL;
-    *saveptr = movptr;
 
+    
+    error_flag = 0;
     /* extracting the part of the label, before a colon - if it's a label at the start of the line*/
     if(!arg){
-    
+        saveptr = create_saveptr(saveptr);
+        if(!saveptr) return NULL;
+        *saveptr = movptr;
+        memset(movptr,0,MAX_LINE_LEN);
+
         token = my_strtok(str, ":", saveptr);
         if(isEmptyString(token)){ /* if nothing is before the colon*/
             strcpy(ast->errors, "Missing label declaration before colon\n");
-            return NULL;
+            error_flag = 1;
         } /* if between the colon and the label there's a space*/
         else if(isspace(token[strlen(token) - 1])){
             strcpy(ast->errors, "declaration of label must be adjacent to colon without spaces\n");
-            return NULL;
+            error_flag = 1;
         }
+        if(error_flag){
+            FREE_SAVEPTR(saveptr,movptr)
+            return NULL;
+        } 
     } 
     else token = str; /*if not - simply check the string that it's a legal label*/
     token = trimStartEnd(token);
 
-    error_flag = 0;
+    
     /* checking errors - if the string is not a system reserved word */
     if(is_reg(token) >= 0 || is_inst(token) >= 0 || is_dir(token) >= 0 || \
     !strcmp(token, "mcr") || !strcmp(token, "endmcr")){
         if (!arg) strcpy(ast->errors, "A system reserved word (like mov , data , etc...) cannot be used as a label.\n");
+        FREE_SAVEPTR(saveptr,movptr)
         return NULL;
     }
     /* legal label - starts with an alphabet letter and it's length is within bounds (31 characters)*/
@@ -181,7 +199,14 @@ char *check_legal_label(frontend_ast *ast, char *str,int arg){
     }
     else error_flag = 1;
 
-    if(!error_flag) label = token; /*saving the label if it was found without errors*/
+    /*saving the label if it was found without errors*/
+    if(!error_flag){
+        label = copystr_calloc(ast,label,token);
+        if(!label){
+            FREE_SAVEPTR(saveptr,movptr)
+            return NULL;
+        }
+    } 
     else label = NULL;
 
     if(!arg){ /*if it's a line label (before a colon), checking what is after that*/
@@ -189,17 +214,21 @@ char *check_legal_label(frontend_ast *ast, char *str,int arg){
         /*if there's no space after the colon it's an error*/
         if(token && !isspace(token[0])){ 
             strcpy(ast->errors, "Missing space after label declaration\n");
+            if(label) free(label);
+            FREE_SAVEPTR(saveptr,movptr)
             return NULL;
         }
         /*if there's nothing after the colon, it's a label on an empty line which is illegal*/
         if(!token || isEmptyString(trimStartEnd(token))){
             strcpy(ast->errors, "Label cannot be declared on empty line\n");
+            if(label) free(label);
+            FREE_SAVEPTR(saveptr,movptr)
             return NULL;
         }    
-        
     }
 
-    free(saveptr);
+    FREE_SAVEPTR(saveptr,movptr)
+    
     return label;
 }
 
@@ -232,6 +261,8 @@ int check_directive(frontend_ast *ast, char *line){
     saveptr = create_saveptr(saveptr);
     if(!saveptr) return 0;
     *saveptr = movptr;
+    memset(movptr,0,MAX_LINE_LEN);
+
 
     /* extracting the part of the directive, after a dot */
     token = my_strtok(line, " ", saveptr);
@@ -251,6 +282,7 @@ int check_directive(frontend_ast *ast, char *line){
     }
     else if(i == -1){
         strcpy(ast->errors, "Illegal directive\n");
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
 
@@ -277,9 +309,13 @@ int check_directive(frontend_ast *ast, char *line){
         break;
     }
 
-    if(!check_args) return 0;
+    if(!check_args){
+        ast->typeofLine = error;
+        FREE_SAVEPTR(saveptr,movptr)
+        return 0;
+    }
 
-    free(saveptr);
+    FREE_SAVEPTR(saveptr,movptr)
     return 1;
 }
 
@@ -294,20 +330,24 @@ int check_entry_extern(frontend_ast *ast, char *line){
     saveptr = create_saveptr(saveptr);
     if(!saveptr) return 0;
     *saveptr = movptr;
+    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
+
+
     
     token = my_strtok(line, " ", saveptr);
     /* if there's nothing in the recieved string, then we have no operand */
     if(!token || isEmptyString(token)){
         strcpy(ast->errors, "Missing label after entry/extern directive\n");
+        free(saveptr);
         return 0;
     }
 
     token = trimStartEnd(token);
     /*checking the argument label*/
     check_label = check_legal_label(ast, token, 1);
-    
     if(!check_label){
-        strcpy(ast->errors, "Illegal label after entry/extern directive\n");
+        if(!FOUND_ALLOC_ERROR) strcpy(ast->errors, "Illegal label after entry/extern directive\n");
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
 
@@ -315,13 +355,19 @@ int check_entry_extern(frontend_ast *ast, char *line){
     /*inserting the label into the ast*/
     DIR_OP_DATA(ast,index).type_data = label_data;
     DIR_OP_DATA(ast,index).data_option.label = copystr_calloc(ast,DIR_OP_DATA(ast,index).data_option.label,check_label);
-    if(!DIR_OP_DATA(ast,index).data_option.label) return 0;
+    if(!DIR_OP_DATA(ast,index).data_option.label){
+        free(check_label);
+        FREE_SAVEPTR(saveptr,movptr)
+        return 0;
+    } 
 
     ast->operands.dir_ops.num_count = ++index;
 
     /* extra arguments after the label */
     if((token = my_strtok(NULL, " ", saveptr))){
         strcpy(ast->errors, "Too many arguments for directive entry/extern\n");
+        free(check_label);
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
 
@@ -329,13 +375,15 @@ int check_entry_extern(frontend_ast *ast, char *line){
     we delete it to prevent confusion*/
     if(!isEmptyString(ast->label)) ast->label[0] = '\0';
     
-    free(saveptr);
+    free(check_label);
+    FREE_SAVEPTR(saveptr,movptr)
+    
     return 1;
 }
 
 int check_data_dir(frontend_ast *ast, char *line){
 
-    char *token,*token_ind,*is_label;
+    char *token,*token_ind,*is_label = NULL;
     char token_backup[MAX_LINE_LEN],*delim = ",";
     int is_int,index,i;
     offset *is_label_offset;
@@ -346,6 +394,7 @@ int check_data_dir(frontend_ast *ast, char *line){
     saveptr = create_saveptr(saveptr);
     if(!saveptr) return 0;
     *saveptr = movptr;
+    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     /*starting to check each operand between commas*/
     token = my_strtok(line,delim, saveptr);
@@ -372,13 +421,24 @@ int check_data_dir(frontend_ast *ast, char *line){
         is_int = is_integer(token,dir);/*just an integer*/
         /*a label defined as integer elsewhere*/
         is_label = check_legal_label(ast,token,1);
+        if(!is_label && FOUND_ALLOC_ERROR){
+            FREE_SAVEPTR(saveptr,movptr)
+            return NULL;
+        } 
         /*an integer represented by an expression label[something] - 
         meaning represented by the result of a data array offset*/
         is_label_offset = check_label_offset(ast,token);
+        if(!is_label_offset){
+            if(is_label) free(is_label);
+            FREE_SAVEPTR(saveptr,movptr)
+            return NULL;
+        }
 
         /*if the operand matched none of the 3 allowed types*/
         if(!is_int && !is_label && !is_label_offset->label_array){ /* token is not a variable name or a legal integer - either not a number or the integer is out of bounds */
             strcpy(ast->errors, "Illegal data argument\n");
+            free_offset_struct(is_label_offset);
+            FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
 
@@ -391,19 +451,34 @@ int check_data_dir(frontend_ast *ast, char *line){
         else if(is_label){ /*integer represented by a label*/
             DIR_OP_DATA(ast,index).type_data = label_data;
             DIR_OP_DATA(ast,index).data_option.label = copystr_calloc(ast,DIR_OP_DATA(ast,index).data_option.label,is_label);
-            if(!DIR_OP_DATA(ast,index).data_option.label) return 0;
+            if(!DIR_OP_DATA(ast,index).data_option.label){
+                free(is_label);
+                if(is_label_offset) free_offset_struct(is_label_offset);
+                FREE_SAVEPTR(saveptr,movptr)
+                return NULL;
+            } 
             index++;
         }
         else if(is_label_offset->label_array){ /*offset value representation*/
             DIR_OP_DATA(ast,index).type_data = label_data;
             /*if we have label[offset] -- copying the 'label' part*/
             DIR_OP_DATA(ast,index).data_option.label = copystr_calloc(ast,DIR_OP_DATA(ast,index).data_option.label , is_label_offset->label_array);
-            if(!DIR_OP_DATA(ast,index).data_option.label) return 0;
+            if(!DIR_OP_DATA(ast,index).data_option.label){
+                if(is_label) free(is_label);
+                free_offset_struct(is_label_offset);
+                FREE_SAVEPTR(saveptr,movptr)
+                return NULL;
+            } 
 
             if(is_label_offset->offset_val.label){
                 /*if we have label[offset] -- copying the 'offset' part*/
                 DIR_OP_DATA(ast,index).offset.label = copystr_calloc(ast,DIR_OP_DATA(ast,index).offset.label , is_label_offset->offset_val.label);
-                if(!DIR_OP_DATA(ast,index).offset.label) return 0;
+                if(!DIR_OP_DATA(ast,index).offset.label){
+                    if(is_label) free(is_label);
+                    free_offset_struct(is_label_offset);
+                    FREE_SAVEPTR(saveptr,movptr)
+                    return NULL;
+                }
                 index++;
             }
             else if(is_label_offset->offset_val.num != -1){
@@ -411,13 +486,8 @@ int check_data_dir(frontend_ast *ast, char *line){
             }
             
             /*freeing the offset structure*/
-            if(is_label_offset->label_array){
-                free(is_label_offset->label_array);
-            } 
-            if(is_label_offset->offset_val.label){
-                free(is_label_offset->offset_val.label);
-            }
-            free(is_label_offset);
+            if(is_label) free(is_label);
+            free_offset_struct(is_label_offset);
         }
         
         /*increasing the total number of operands between iterations*/
@@ -425,11 +495,13 @@ int check_data_dir(frontend_ast *ast, char *line){
         
         /*advancing the token_ind pointer to be at the start of the next token*/
         if(++i > 0 && strchr(token_ind,',')) token_ind += (int)strlen(token_backup) + 1;
-        token = my_strtok(NULL, ",", saveptr);
-    }
-
+        token = my_strtok(NULL, delim, saveptr);
     
-    free(saveptr);
+        if(is_label) free(is_label);
+
+    } /* end while loop*/
+
+    FREE_SAVEPTR(saveptr,movptr)
     return 1;
 }
 
@@ -489,7 +561,7 @@ int check_string(frontend_ast *ast, char *line){
     DIR_OP_DATA(ast,index).type_data = string;
 
     DIR_OP_DATA(ast,index).data_option.string = copystr_calloc(ast,DIR_OP_DATA(ast,index).data_option.string,start);
-    if(!DIR_OP_DATA(ast,index).data_option.string) return 0;
+    if(!DIR_OP_DATA(ast,index).data_option.string) return NULL;
 
     /*saving only part between the first and last double quotes into the string in the AST*/
     memcpy(DIR_OP_DATA(ast,index).data_option.string ,start,end - start);
@@ -516,6 +588,7 @@ int check_define(frontend_ast *ast, char *line){
     /* if a legal line label was found before a define line of .define directive - it's an error*/
     if(!isEmptyString(ast->label)){
         strcpy(ast->errors, "A label cannot be declared on a line with .define directive\n");
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
 
@@ -525,13 +598,18 @@ int check_define(frontend_ast *ast, char *line){
 
     if(!token || isEmptyString(token)){ /*empty token - no symbol*/
         strcpy(ast->errors, "Missing symbol after .define directive\n");
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
 
     label = NULL; /*checking the legality of the symbol - like a label*/
     if(!(label = check_legal_label(ast, token, 1))){
-        strcpy(ast->errors, "Illegal symbol after .define directive\n");
-        return 0;
+        FREE_SAVEPTR(saveptr,movptr)
+        if(!FOUND_ALLOC_ERROR){
+            strcpy(ast->errors, "Illegal symbol after .define directive\n");
+            return 0;
+        } 
+        else return NULL;
     }
 
     /* second token - the number assigned to the symbol */
@@ -540,11 +618,15 @@ int check_define(frontend_ast *ast, char *line){
 
     if(!token || isEmptyString(token)){ /*no number after symbol*/
         strcpy(ast->errors, "Missing integer in .define directive\n");
+        if(label) free(label);
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
 
     if(!(check_num = is_integer(token,dir))){ /*if the number operand is illegal*/
-        strcpy(ast->errors, "Illegal integer operand in .define directive\n");
+        strcpy(ast->errors, "Illegal operand after = .define directive - supposed to be an integer\n");
+        if(label) free(label);
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
     else num = atoi(token); /*saving the number*/
@@ -556,7 +638,11 @@ int check_define(frontend_ast *ast, char *line){
         /* the first operand - the variable name*/
         DIR_OP_DATA(ast,index).  type_data = label_data;
         DIR_OP_DATA(ast,index).data_option.label = copystr_calloc(ast,DIR_OP_DATA(ast,index).data_option.label,label);
-        if(!DIR_OP_DATA(ast,index).data_option.label) return 0;
+        if(!DIR_OP_DATA(ast,index).data_option.label){
+            free(label);
+            FREE_SAVEPTR(saveptr,movptr)
+            return NULL;
+        }
         index++;
         /* the second operand - the number*/
         DIR_OP_DATA(ast,index).  type_data = int_data;
@@ -565,7 +651,8 @@ int check_define(frontend_ast *ast, char *line){
         ast->operands.dir_ops.num_count = index;
     }
 
-    free(saveptr);
+    if(label) free(label);
+    FREE_SAVEPTR(saveptr,movptr)
     return 1;
 }
 
@@ -586,6 +673,7 @@ int check_instruction(frontend_ast *ast, char *line){
     saveptr = create_saveptr(saveptr);
     if(!saveptr) return 0;
     *saveptr = movptr;
+    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     /*first token - the instruction operation code (mov,add, etc...)*/
     token = my_strtok(line, " ", saveptr);
@@ -602,6 +690,7 @@ int check_instruction(frontend_ast *ast, char *line){
     }
     else if(i == -1){
         strcpy(ast->errors, "Illegal instruction\n");
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
 
@@ -614,9 +703,12 @@ int check_instruction(frontend_ast *ast, char *line){
     }
     
     /* checking the operands of the instruction*/
-    if(!check_inst_operands(ast, line, i)) return 0; 
+    if(!check_inst_operands(ast, line, i)){
+        FREE_SAVEPTR(saveptr,movptr)
+        return 0;
+    }  
 
-    free(saveptr);
+    FREE_SAVEPTR(saveptr,movptr)
     return 1;
 }
 
@@ -632,13 +724,11 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
     movptr - saves the string and draws out the tokens in tokenation*/
     char **saveptr = NULL,movptr[MAX_LINE_LEN];
 
-    saveptr = create_saveptr(saveptr);
-    if(!saveptr) return 0;
-    *saveptr = movptr;
 
-    /* checking the case of no operands */
+    /* checking the case of no operands and the line
+    is not empty - meaning there's extra text*/
     if(!op_codes[opcodeNum].arg_num && !isEmptyString(line)){
-        strcpy(ast->errors, "Too many arguments for instructions rts,hlt - those demand no operands\n");
+        strcpy(ast->errors, "Extranous text after instructions rts,hlt - those have no operands!\n");
         return 0;
     }
     /* assigning the right delimiter for case of 2 or 1 operands */
@@ -650,10 +740,19 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
         strcpy(delim, " ");
         index = 1;
     }
+    token = NULL;
+
+    saveptr = create_saveptr(saveptr);
+    if(!saveptr) return 0;
+    *saveptr = movptr;
+    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
+
+    if(op_codes[opcodeNum].arg_num != 0){
+        token = my_strtok(line, delim, saveptr);
+        i = 0;
+        token_ind = line;
+    }
     
-    token = my_strtok(line, delim, saveptr);
-    i = 0;
-    token_ind = line;
     while(op_codes[opcodeNum].arg_num && token){
         
         /*saving the backup token to use for investigating commas*/
@@ -675,20 +774,34 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
                 /*missing 2nd argument after comma*/
                 else if(i > 0 && !strchr(token_ind,',')) strcpy(ast->errors, "Missing argument after comma\n");
             }
+            FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
         /*if there are more operands than permitted*/
         if(index > 1){
             strcpy(ast->errors, "Too many arguments for instruction\n");
+            FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
 
         /*checking the possible types of operands*/
         operand_type_0 = address_type_0(ast, token);
-        if(operand_type_0 == NULL) return 0;
+        if(operand_type_0 == NULL){
+            FREE_SAVEPTR(saveptr,movptr)
+            return NULL;
+        } 
         check_label = check_legal_label(ast, token, 1);
+        if(!check_label && FOUND_ALLOC_ERROR){
+            
+            FREE_SAVEPTR(saveptr,movptr)
+            return 0;
+        }
         check_offset = check_label_offset(ast, token);
-        if(check_offset == NULL) return 0;
+        if(check_offset == NULL){
+            if(check_label) free(check_label);
+            FREE_SAVEPTR(saveptr,movptr)
+            return NULL;
+        } 
         check_reg = is_reg(token);
 
 
@@ -707,7 +820,10 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
                 
                 INST_OP_DATA(ast,index).data_option.label = \
                 copystr_calloc(ast,INST_OP_DATA(ast,index).data_option.label,operand_type_0->option.label);
-                if(!INST_OP_DATA(ast,index).data_option.label) return 0;
+                if(!INST_OP_DATA(ast,index).data_option.label){
+                    free(operand_type_0);
+                    return 0;
+                } 
                 
                 index++;
             }
@@ -764,32 +880,35 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
         /*if the operand is none of the permitted type*/
         if(operand_type_0->type == none_0 && !check_label && !check_offset->label_array && check_reg == -1){
             strcpy(ast->errors, "Illegal operand for instruction\n");
+            free_offset_struct(check_offset);
+
+            FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
         
-        token = my_strtok(NULL, delim, saveptr);
-        if(++i > 0 && strchr(token_ind,',')) token_ind += (int)strlen(token_backup) + 1;
+        
+        if(check_label) free(check_label);
 
         /*freeing the address_0_op variable - and it's subcomponents if those were dynamically allocated*/
         if(operand_type_0->type == label_0){
             free(operand_type_0->option.label);
         }
         if(operand_type_0->type == label_offset_0){
-            if(operand_type_0->option.label_offset.label_array){
-                free(operand_type_0->option.label_offset.label_array);
-            }
-            if(operand_type_0->option.label_offset.offset_val.label){
-                free(operand_type_0->option.label_offset.offset_val.label);
-            }
+            free_offset_struct(&operand_type_0->option.label_offset);
+            
         }
         free(operand_type_0);
 
         /*freeing the offset variable and it's subcomponents*/
-        if(check_offset->label_array) free(check_offset->label_array);
-        if(check_offset->offset_val.label) free(check_offset->offset_val.label);
-        free(check_offset);
+        free_offset_struct(check_offset);
     
+        
+        if(++i > 0 && strchr(token_ind,',')) token_ind += (int)strlen(token_backup) + 1;
+        token = my_strtok(NULL, delim, saveptr);
     } /* end while loop*/
+
+    /*we don't need tokenation any more so we free this pointer*/
+    FREE_SAVEPTR(saveptr,movptr)
 
     /* if index is lower than 2 - we didn't scan enough operands*/
     if(op_codes[opcodeNum].arg_num == 2 && index < 2){
@@ -831,7 +950,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
     }
 
     
-    free(saveptr);
+    
     return 1;
 }
 
@@ -845,8 +964,10 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
 
 offset *check_label_offset(frontend_ast *ast, char *str){
     offset *offset_var = NULL;
-    char *start_offset,*end_offset,*label_offset,*num_offset,*token;
-    int i,is_num_offset,num;
+    /*label_array - the name of the array that defines the offset
+    label_offset  - the name of the offset value inside if it's defined by a label*/
+    char *start_offset,*end_offset,*label_array,*label_offset,*token;
+    int i,is_offset_int,num;
     char token_backup[MAX_LINE_LEN];
     /*saveptr - to serve as the starting point in tokenation
     movptr - saves the string and draws out the tokens in tokenation*/
@@ -862,6 +983,8 @@ offset *check_label_offset(frontend_ast *ast, char *str){
 
     /*initializing the fields - offset of -1 is not an array offset*/
     offset_var->offset_val.num = -1;
+    offset_var->offset_val.label = NULL;
+    offset_var->label_array = NULL;
 
     /*finding the opening and closing brackets*/
     start_offset = strchr(str,'[');
@@ -890,45 +1013,99 @@ offset *check_label_offset(frontend_ast *ast, char *str){
         strcpy(token_backup,token);
 
         if(i == 1){ /* label of the offset*/
-            /**/
-            if(!(label_offset = check_legal_label(ast,token,1)) \
-            || (strlen(token_backup) > strlen(label_offset))) return offset_var;
+            label_array = check_legal_label(ast,token,1);
+            /*allocation failed for the label_array for the offset*/
+            if(!label_array && FOUND_ALLOC_ERROR){
+                free(saveptr);
+                free(offset_var);
+                return NULL;
+            }
+            /*allocation successful but it's not a legal label*/
+            if(!label_array || (strlen(token_backup) > strlen(label_array))){
+                if(label_array) free(label_array);
+                free(saveptr);
+                return offset_var;
+            } 
         }
         else if(i == 2){ /* the offset number itself  */
-            is_num_offset = is_integer(token,inst); /*just an integer*/
-            num_offset = check_legal_label(ast,token,1); /*integer presented as a variable*/
-            if(is_num_offset) num = atoi(token);
-            if(!is_num_offset && !num_offset) return offset_var; /*if the offset is not a label or integer*/
+            is_offset_int = is_integer(token,inst); /*just an integer*/
+            label_offset = check_legal_label(ast,token,1); /*integer presented as a variable*/
+            if(!label_offset && FOUND_ALLOC_ERROR){
+                if(label_array) free(label_array);
+                free(offset_var);
+                free(saveptr);
+                return NULL;
+            }
+            if(is_offset_int) num = atoi(token);
+
+            /*if the offset is not a label or integer - NOT AN OFFSET*/
+            if(!is_offset_int && !label_offset){
+                if(label_array) free(label_array);
+                free(saveptr);
+                return offset_var; 
+            }
         }
         /* there are more than 2 tokens in the string meaning something
-        after the closing brackets*/
-        else if(i > 2 && token && !isEmptyString(token)) return offset_var;
+        after the closing brackets - it's not an offset*/
+        else if(i > 2 && token && !isEmptyString(token)){
+            free(saveptr);
+            if(label_offset) free(label_offset);
+            if(label_array) free(label_array);
+            return offset_var;
+        }
 
         token = my_strtok(NULL,"[]",saveptr);
         i++;
     }
 
     /*saving the legal label into the offset struct*/
-    offset_var->label_array = copystr_calloc(ast,offset_var->label_array,label_offset);
-    if(!offset_var->label_array) return NULL;
+    offset_var->label_array = copystr_calloc(ast,offset_var->label_array,label_array);
+    if(!offset_var->label_array){
+        if(label_offset) free(label_offset);
+        if(label_array) free(label_array);
+        free(offset_var);
+        free(saveptr);
+        return NULL;
+    } 
 
     /*saving the number into the offset struct - either as label or as an integer*/
-    if(is_num_offset){
-        offset_var->offset_val.num = num; /*just an integer*/
+    if(is_offset_int){
         /*if the number representing offset is larger than the maximmal possible,
         we have a problem, since the maximal amount of elements in a .data 
         directive is constrained by the maximal line length*/
-        if((offset_var->offset_val.num < 0 || offset_var->offset_val.num > MAX_OFFSET)){
+        if(num < 0 || num > MAX_OFFSET){
             strcpy(ast->errors, "Value of offset in label[offset] is out of range for possible offset values \n");
+            if(label_offset) free(label_offset);
+            if(label_array) free(label_array);
+            if(offset_var->label_array) free(offset_var->label_array);
+            offset_var->label_array = NULL;
+            return offset_var;
         }
+        /*saving the number if it's within bounds*/
+        offset_var->offset_val.num = num; /*just an integer*/
+
+        
     }/*if the number is a label - we save it as a label*/
-    else if(num_offset){
-        offset_var->offset_val.label = copystr_calloc(ast,offset_var->offset_val.label,num_offset);
-        if(!offset_var->offset_val.label) return NULL;
+    else if(label_offset){
+        offset_var->offset_val.label = copystr_calloc(ast,offset_var->offset_val.label,label_offset);
+        if(!offset_var->offset_val.label){
+            if(label_array) free(label_array);
+            if(label_offset) free(label_offset);
+            if(offset_var->label_array) free(offset_var->label_array);
+            free(offset_var);
+            free(saveptr);
+            return NULL;
+        } 
     } 
 
     free(saveptr);
     return offset_var;
+}
+
+void free_offset_struct(offset *offset_var){
+    if(offset_var->label_array) free(offset_var->label_array);
+    if(offset_var->offset_val.label) free(offset_var->offset_val.label);
+    free(offset_var);
 }
 
 address_0_op *address_type_0(frontend_ast *ast,char *str){
@@ -959,16 +1136,22 @@ address_0_op *address_type_0(frontend_ast *ast,char *str){
     }
 
     /*the 3 options - just an integer,label,label with offset*/
+    check_label = check_legal_label(ast,str,1);
+    if(!check_label && FOUND_ALLOC_ERROR) return NULL;
     check_offset = check_label_offset(ast,str);
     if(is_integer(str,inst)){ /*integer*/
         result->type = num;
         result->option.num = atoi(str);
     }
     /*regular label*/
-    else if((check_label = check_legal_label(ast,str,1))){
+    
+    else if(check_label){
         result->type = label_0;
         result->option.label = copystr_calloc(ast,result->option.label , check_label);
-        if(!result->option.label) return NULL;
+        if(!result->option.label){
+            free(check_label);
+            return NULL;
+        }
         
     }
     /*label with offset*/
@@ -992,16 +1175,15 @@ address_0_op *address_type_0(frontend_ast *ast,char *str){
         return result;
     }
 
-    if(check_offset->label_array) free(check_offset->label_array);
-    if(check_offset->offset_val.label) free(check_offset->offset_val.label);
-    free(check_offset);
+    if(check_label) free(check_label);
+    free_offset_struct(check_offset);
     return result;
 }
 
 char *copystr_calloc(frontend_ast *ast, char* dest, const char *src){
     dest = (char *) calloc(strlen(src) + 1,sizeof(char));
     if(!dest){
-        strcpy(ast->errors, "Memory allocation failed for label/string variable in AST\n");
+        strcpy(ast->errors, "Error: Memory allocation failed for label/string variable in AST\n");
         return NULL;
     }
     strcpy(dest,src);
@@ -1039,7 +1221,7 @@ int check_mid_newline(char *line){
         i++;
     }
 
-    free(saveptr);
+    FREE_SAVEPTR(saveptr,movptr)
     return 0;
 }
 
@@ -1116,7 +1298,6 @@ void assign_ast_dir_inst(frontend_ast *ast,line_type type,int i){
 }
 
 
-
 char *trimStartEnd(char* str){
     char *end;
     
@@ -1135,10 +1316,11 @@ char *trimStartEnd(char* str){
 
 char* my_strtok(char *str, const char *delim,char **saveptr){
 
-    char *str_copy = NULL; 
+    static char *start = NULL; 
+    char *str_copy; 
 
     /* this is the first interation of tokenization - happens only once*/
-    if (str) strcpy(*(saveptr),str);
+    if (str) strcpy((*saveptr),str);
 
     if (!(*saveptr)) return NULL; /* the final iteration - reaching the end */
 
@@ -1190,7 +1372,7 @@ void frontend_free(frontend_ast *ast){
         
     }
 
-    else if(ast->typeofLine == dir){
+    else if(ast->typeofLine == dir || ast->typeofLine == define){
         
         for(i = 0; i < ast->operands.dir_ops.num_count; i++){
             /*if we had a label allocated - designated as label data*/
