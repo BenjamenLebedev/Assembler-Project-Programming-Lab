@@ -1,36 +1,59 @@
 #include "../Header_Files/ast.h"
 #include "../Header_Files/global_var.h"
+#include "../Header_Files/mid.h"
 
-
-
-int main(){
+int main(int argc, char *argv[]){
 
     FILE *input;
+    char filename[100];
     frontend_ast *ast = NULL;
-    char line1[MAX_LINE_LEN] = " MAN: .data 2,xs,  LIS[ x ] ";
-    char line[MAX_LINE_LEN];
+    char *line1 = "MAIN: .data 1,x,LIST[x]";
+    char *line = NULL,c;
     int series;
 
-    series = 1;
-    if(series == 1){
-        input = fopen("psNEW.as", "r");
+    
+    /*"STR: .data 5,3,2,1,x,yz,LIST[3]"*/
 
-        while(fgets(line, sizeof(line), input) != NULL){
+    series = 0;
+    if(series == 1){
+
+        if(argc < 2){
+            printf("Error: no file name given\n");
+            return 1;
+        }
+        
+        strcpy(filename, argv[1]);
+        input = fopen(argv[1], "r");
+        if(!input){
+            printf("Error: file %s not found\n", filename);
+            return 1;
+        }
+
+        while((c = fgetc(input)) != EOF){
+            line = read_line_input(c, input);
             ast = frontend(line);
             frontend_free(ast);
         }
         fclose(input);
     }
     else if(series == 0){
-        ast = frontend(line1);
+        line = (char *) calloc(strlen(line1) + 1, sizeof(char));
+        if(!line){
+            printf("Error: memory allocation failed\n");
+            return 1;
+        }
+        strcpy(line, line1);
+        ast = frontend(line);
         frontend_free(ast);
     }
     
-    
+    if(line) free(line);
     return 0;
 }
 
-void print_ast(frontend_ast *ast,char *line){
+
+
+void print_ast(frontend_ast *ast,const char *line){
 
     op_code_args op_codes1[] = {
     {"mov",  2}, 
@@ -53,7 +76,10 @@ void print_ast(frontend_ast *ast,char *line){
 
     int i;
     printf("The processed line of the AST is: [%s]\n", line);
-    if(!isEmptyString((*ast).errors)) printf("The AST errors are: %s\n", (*ast).errors);
+    if(!isEmptyString((*ast).errors)){
+        printf("The AST errors are: %s\n", (*ast).errors);
+        return;
+    }
 
     printf("The AST typeofLine is: %d ", (*ast).typeofLine);
     if((*ast).typeofLine == empty)      printf(" (empty) \n");
@@ -72,6 +98,7 @@ void print_ast(frontend_ast *ast,char *line){
         }
 
         for(i = 0; i < 2; i++){
+            printf("********************operand no. %d**************************\n",i+1);
             printf("The AST operands.inst_ops[%d].address_of_op is: %d", i, \
             (*ast).operands.inst_ops[i].address_of_op);
             if((*ast).operands.inst_ops[i].address_of_op == const_num)         printf(" (const_num)\n");
@@ -98,12 +125,17 @@ void print_ast(frontend_ast *ast,char *line){
                 printf("The AST operands.inst_ops[%d].data_inst.data_option.string is: %s\n", i, \
             (*ast).operands.inst_ops[i].data_inst.data_option.string);
             }
-            printf("The AST operands.inst_ops[%d].data_inst.offset.label is: %s\n", i, \
-            (*ast).operands.inst_ops[i].data_inst.offset.label);
-            printf("The AST operands.inst_ops[%d].data_inst.offset.num is: %d\n", i, \
-            (*ast).operands.inst_ops[i].data_inst.offset.num);
+            
+            if((*ast).operands.inst_ops[i].data_inst.offset.label){
+                printf("The AST operands.inst_ops[%d].data_inst.offset.label is: %s\n", i, \
+                (*ast).operands.inst_ops[i].data_inst.offset.label);
+            }
+            else if((*ast).operands.inst_ops[i].data_inst.offset.num != -1){
+                printf("The AST operands.inst_ops[%d].data_inst.offset.num is: %d\n", i, \
+                (*ast).operands.inst_ops[i].data_inst.offset.num);
+            }
         }
-
+        printf("\n");
     }
 
     /*dir_ops*/
@@ -117,6 +149,7 @@ void print_ast(frontend_ast *ast,char *line){
         printf("The AST operands.dir_ops.num_count is: %d\n", \
         (*ast).operands.dir_ops.num_count);
         for (i = 0; i < (*ast).operands.dir_ops.num_count; i++){
+            printf("********************operand no. %d**************************\n",i+1);
             printf("The AST operands.dir_ops.data_dir[%d].type_data is: %d",i, \
             (*ast).operands.dir_ops.data_dir[i].type_data);
             if((*ast).operands.dir_ops.data_dir[i].type_data == int_data)        printf(" (int_data)\n");
@@ -135,10 +168,16 @@ void print_ast(frontend_ast *ast,char *line){
                 printf("The AST operands.dir_ops.data_dir[%d].data_option.string is: %s\n",i, \
                 (*ast).operands.dir_ops.data_dir[i].data_option.string);
             }
-            printf("The AST operands.dir_ops.data_dir[%d].offset.label is: %s\n",i, \
-            (*ast).operands.dir_ops.data_dir[i].offset.label);
-            printf("The AST operands.dir_ops.data_dir[%d].offset.num is: %d\n\n",i, \
-            (*ast).operands.dir_ops.data_dir[i].offset.num);
+
+            if((*ast).operands.dir_ops.data_dir[i].offset.label){
+                printf("The AST operands.dir_ops.data_dir[%d].offset.label is: %s\n",i, \
+                (*ast).operands.dir_ops.data_dir[i].offset.label);
+            }
+            else if((*ast).operands.dir_ops.data_dir[i].offset.num != -1){
+                printf("The AST operands.dir_ops.data_dir[%d].offset.num is: %d\n",i, \
+                (*ast).operands.dir_ops.data_dir[i].offset.num);
+            }
         }
+        printf("\n");
     }
 }
