@@ -90,7 +90,33 @@ void add_array_to_data_image(struct translation_unit *unit, int *array, size_t a
     }
 }
 
+char* read_line_input(char c,FILE* file){
+    char* inputLine = NULL;
+    char str_tmp[CHUNK_READ];
+    int len_input = 0, len_tmp = 0;
 
+    inputLine = (char *) realloc(inputLine,1);
+    if(!inputLine){
+        printf("********* Memory allocation error\n");
+    }
+    strncpy(inputLine,&c,1);
+    len_input++; 
+    do {
+        fgets(str_tmp, CHUNK_READ, file);
+        len_tmp = strlen(str_tmp);
+        inputLine = (char *) realloc(inputLine, len_input+len_tmp+1);
+        if(!inputLine){
+            printf("********* Memory allocation error\n");
+        }
+        strcpy(inputLine+len_input, str_tmp);
+        len_input += len_tmp;
+    } while (len_tmp==CHUNK_READ-1 && str_tmp[CHUNK_READ-2]!='\n');
+    
+    if(inputLine[strlen(inputLine) - 1] == '\n'){
+        inputLine[strlen(inputLine) - 1] = '\0';
+    }
+    return inputLine;
+}
 
 /***********************************************************************************************************************/
 int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE *amFile) {
