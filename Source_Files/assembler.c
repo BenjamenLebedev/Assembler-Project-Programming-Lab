@@ -9,19 +9,16 @@
 #include "../Header_Files/vector.h"
    
   
-int mains(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     int i;
     FILE *amFile;
     char *amFileName;
     void *const *begin;
     void *const *end;
     struct symbol *symbol; 
-
-
-    struct translation_unit *translation_unit = (struct translation_unit*)malloc(sizeof(struct translation_unit));;
-    translation_unit->symbols = new_vector(symbol_ctor, symbol_dtor);
-    translation_unit->externals = new_vector(extern_ctor, extern_dtor);
     
+
+    struct translation_unit *translation_unit = create_translation_unit();
 
     for (i = 1; i < argc; i++){
 
@@ -41,12 +38,14 @@ int mains(int argc, char *argv[]) {
         amFile = fopen(amFileName, "r");
         if(!amFile){
             printf("Error: file %s not found\n", amFileName);
+            free(amFileName);
+            free_translation_unit(translation_unit);
             return 1;
         }
         else{
             if(!firstPass(translation_unit, amFileName, amFile)){ 
                 printf("********* printing symbols inside translation_unit:\n");
-                LOOP(begin, end, translation_unit->symbols) {
+                VECTOR_LOOP(begin, end, translation_unit->symbols) {
                     if (*begin) {
                     symbol = (struct symbol *) *begin;
                     printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
@@ -105,12 +104,12 @@ int mains(int argc, char *argv[]) {
                 printf("        -------------------------------  firstPass error ------------------------------- \n");
                 printf("---------------------------------------------------------------------------------------------------- \n");
             }
+
             fclose(amFile);
         }
 
-        vector_destroy(&translation_unit->symbols);
-        vector_destroy(&translation_unit->externals);
-        free(translation_unit);
-    }
+        free_translation_unit(translation_unit);
+        free(amFileName);
+    } /* end while loop over all argument files*/
     return 0;
 }
