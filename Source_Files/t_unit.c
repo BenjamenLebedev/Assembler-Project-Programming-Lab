@@ -2,6 +2,7 @@
 #include "../Header_Files/global_var.h"
 #include "../Header_Files/t_unit.h" 
 #include "../Header_Files/vector.h"
+#include "../Header_Files/mid.h"
  
 struct translation_unit *create_translation_unit() {
     /*allocate memory for the translation unit*/
@@ -12,12 +13,13 @@ struct translation_unit *create_translation_unit() {
     }
     if (unit != NULL) { /*check if memory allocation succeeded*/
         /*initialize values*/
-        unit->code_image = NULL;
-        unit->data_image = NULL;
+        
         unit->IC = 0; 
         unit->DC = 0;
-        unit->symbols = new_vector(NULL, NULL);
-        unit->externals = new_vector(NULL, NULL);
+        unit->code_image = NULL;
+        unit->data_image = NULL;
+        unit->symbols = new_vector(symbol_ctor, symbol_dtor);
+        unit->externals = new_vector(extern_ctor, extern_dtor);
         unit->extern_use = FALSE;
         unit->entry_use = FALSE;
     }
@@ -30,15 +32,13 @@ void add_to_code_image(struct translation_unit *unit, int value) {
         return;
     }
     /*dynamic allocation of memory*/
-    if (unit->IC % 10 +1 == 1) {    
-        int *temp = (int *)realloc(unit->code_image, (unit->IC + 10 - 1) * sizeof(int));
+    if ((unit->IC % 10 +1) == 1) { /*if we to the 10th cell, increase the size by 10*/
+        unit->code_image = (int *)realloc(unit->code_image, (unit->IC + 10) * sizeof(int));
         printf("relocating memory in add_to_code_image func\n");
-        if (temp == NULL) {
+        if (unit->code_image == NULL) {
             printf("Error: Memory reallocation failed for code_image.\n");
             return;
         }
-        /*update code_image pointer*/
-        unit->code_image = temp;
     }
     unit->code_image[unit->IC] = value;
 }
@@ -49,14 +49,12 @@ void add_to_data_image(struct translation_unit *unit, int value) {
         return;
     }
     /*dynamic allocation of memory*/
-    if (unit->DC % 10 +1== 1) {
-        int *temp = (int *)realloc(unit->data_image, (unit->DC + 10 - 1) * sizeof(int));
-        if (temp == NULL) {
+    if ((unit->DC % 10 +1)== 1) { /*if we to the 10th cell, increase the size by 10*/
+        unit->data_image = (int *)realloc(unit->data_image, (unit->DC + 10) * sizeof(int));
+        if (unit->data_image == NULL) {
             printf("Error: Memory reallocation failed for data_image.\n");
             return;
         }
-        /*update code_image pointer*/
-        unit->data_image = temp;
     }
     unit->data_image[unit->DC] = value;
 }
