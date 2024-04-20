@@ -41,7 +41,7 @@ struct symbol * does_symbol_exist(struct vector * symbol_vector, char * name){
     void *const *begin;
     void *const *end;
     /*iterate through the symbols vec*/
-    LOOP(begin, end, symbol_vector) {
+    VECTOR_LOOP(begin, end, symbol_vector) {
         if(*begin){
             symbol_pointer = (struct symbol *) *begin;
             printf("comparing: %s to %s in symbol_vector\n", name, symbol_pointer->symName);
@@ -62,7 +62,7 @@ struct ext * does_extern_exist(struct vector * extern_vector, char * name){
     void *const *begin;
     void *const *end;
     /*iterate through the symbols vec*/
-    LOOP(begin, end, extern_vector) {
+    VECTOR_LOOP(begin, end, extern_vector) {
         if(*begin) {
             extern_pointer = (struct ext *) *begin;
             /*if the symbol name matches the provided name*/
@@ -74,20 +74,6 @@ struct ext * does_extern_exist(struct vector * extern_vector, char * name){
     }
     printf("********* extern not found in does_extern_exist: %s\n", name);
     return NULL;
-}
-
-void add_array_to_data_image(struct translation_unit *unit, int *array, size_t array_size) {
-    int i;
-    /* check if the translation_unit and the data_image are valid */
-    if (unit == NULL || unit->data_image == NULL) {
-        printf("Error: Invalid translation unit or data image, in func add_array_to_data_image\n");
-        return;
-    }
-    /* iterate over the array and add each element to the data_image */
-    for (i = 0; i < array_size; i++) {
-        add_to_data_image(unit, array[i]);
-        
-    }
 }
 
 char* read_line_input(char c,FILE* file){
@@ -121,23 +107,23 @@ char* read_line_input(char c,FILE* file){
 /***********************************************************************************************************************/
 int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE *amFile) {
     int i,len;
-    char line[MAX_LINE_LEN];
+    char *line = NULL;
     int ic = IC_START;
     int dc = 0;
     int is_error = FALSE;
     int line_counter = 1;
 
-    frontend_ast *ast;
+    ast_tree *ast;
     struct symbol *find_symbol;
     void *const *begin;
     void *const *end;
-    char *string1;
+    char *string1,c;
 
     struct symbol *symbol;
        
 
     printf("entering while loop in first pass\n");
-    while (fgets(line, sizeof(line), amFile)) {
+    while ((c = fgetc(amFile)) != EOF) {
         symbol = (struct symbol *) malloc(sizeof(struct symbol)); 
         symbol->address =0;
         strcpy(symbol->symName,"\0");
@@ -146,19 +132,24 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         printf("\n\n\n\n********* processing line number: %d\n",line_counter);
         printf("********* DC is: %d\nIC is: %d\n\n", dc, ic);
 
-        ast = frontend(line);/*get the ast struct for each line*/
+        line = read_line_input(c,amFile);/*read line from file*/
+        ast = ast_line(line);/*get the ast struct for each line*/
 
         /*check if ast found errors, if so print them and move to the next line*/
         if (ast->errors[0] != '\0') {
             printf("********* error: syntax error in file: %s line: %d, %s\n", amFileName, line_counter, ast->errors);
             line_counter++;
             is_error = TRUE;
-            frontend_free(ast);
+            free_ast(ast);
+            free(symbol);
+            free(line);
             continue;
         }/*check if line is empty, if so move on*/
         else if(ast->typeofLine == empty){
             /* line_counter++; */
-            frontend_free(ast);
+            free_ast(ast);
+            free(symbol);
+            free(line);
             continue;
         }
        
@@ -287,12 +278,14 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
 
         }
         line_counter++;     /*increase line counter each while loop*/
-        frontend_free(ast); /*free ast*/
+        free_ast(ast); /*free ast*/
+        free(symbol);       /*free symbol*/
+        free(line);         /*free line*/
     }
 
 
     printf("\n********* checking to see if there is a symbol that was declared but not defined:\n");
-    LOOP(begin, end, translation_unit->symbols) {
+    VECTOR_LOOP(begin, end, translation_unit->symbols) {
         if (*begin) {
             symbol = (struct symbol *) *begin;
             printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
@@ -315,12 +308,13 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
     rewind(amFile);
     line_counter = 1;
     /*iterate through the file again*/
-    while (fgets(line, sizeof(line), amFile)) {
+    while ((c = fgetc(amFile)) != EOF) {
         symbol = (struct symbol *) malloc(sizeof(struct symbol)); 
         symbol->address =0;
         strcpy(symbol->symName,"\0");
 
-        ast = frontend(line); /*get the ast*/
+        line = read_line_input(c,amFile);
+        ast = ast_line(line); /*get the ast*/
         
         /*incase of declaration data/string, update the DC accordingly */
         printf("//////on line: %d in second while in first pass\n", line_counter);        
@@ -337,7 +331,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                 }
                 /*if data is label data*/
                 else if(ast->operands.dir_ops.data_dir[i].type_data == label_data){
-                    printf("in label_data");
+                    printf("in label_data\n");
                     find_symbol = does_symbol_exist(translation_unit->symbols, ast->operands.dir_ops.data_dir[i].data_option.label);
                     if(find_symbol){
                         printf("adding label addres: %d to data image\n", find_symbol->address);
@@ -364,12 +358,12 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             } 
         }
         line_counter++;
-        frontend_free(ast); /*free ast*/
+        free_ast(ast); /*free ast*/
+        free(symbol);       /*free symbol*/
+        free(line);         /*free line*/
     }
 
 
-
-   /*  free(symbol);  *//*can cause probemlms*/
     return is_error;
 }
 
@@ -382,7 +376,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
     int line_counter = 1;
     int is_error = FALSE;
 
-    frontend_ast *ast = NULL;
+    ast_tree *ast = NULL;
     struct ext *find_extern;
     struct symbol *find_symbol;
 
@@ -396,11 +390,12 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
         
         printf("********* Processing line in second pass: %s\n", line);
         /* ast = front_end_func_simulator_multi_text(line_counter); */
-        ast = frontend(line);
+        ast = ast_line(line);
         printf("********* ast returned line in second pass: %s\n", line);
         
         /*empty line */
         if(ast->typeofLine == empty){
+            free_ast(ast);
             continue;
         }
         is_op_source =0;
@@ -491,7 +486,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
                                     extern1->address[0] = translation_unit->IC + 100;
                                     extern1->address_count = 1;
                                     translation_unit->extern_use = TRUE;
-                                    extern1->ext_name = ast->operands.inst_ops[i].data_inst.data_option.label;
+                                    strcpy(extern1->ext_name, ast->operands.inst_ops[i].data_inst.data_option.label);
                                     vector_insert(translation_unit->externals, extern1); 
                                 }                               
                             }/*if symbol is not extern*/
@@ -543,7 +538,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
 
         }
         line_counter++;
-        frontend_free(ast); /*free ast*/
+        free_ast(ast); /*free ast*/
 
     }
 
