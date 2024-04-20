@@ -8,7 +8,7 @@ OBJS = $(SRCS:.c=.o)
 LIB = ./Header_Files/*.h 
 OUT = ${shell ls *.am *.ob *.ent *.ext *.txt}
 # Executable
-TARGET = mid
+TARGET = assembler
 
 # Default target
 all: $(TARGET)
