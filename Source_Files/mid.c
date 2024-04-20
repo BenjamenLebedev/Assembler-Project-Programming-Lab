@@ -153,10 +153,12 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             printf("********* error: syntax error in file: %s line: %d, %s\n", amFileName, line_counter, ast->errors);
             line_counter++;
             is_error = TRUE;
+            frontend_free(ast);
             continue;
         }/*check if line is empty, if so move on*/
         else if(ast->typeofLine == empty){
             /* line_counter++; */
+            frontend_free(ast);
             continue;
         }
        
@@ -313,7 +315,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
     rewind(amFile);
     line_counter = 1;
     /*iterate through the file again*/
-    while (fgets(line, sizeof(line), amFile)) {     
+    while (fgets(line, sizeof(line), amFile)) {
         symbol = (struct symbol *) malloc(sizeof(struct symbol)); 
         symbol->address =0;
         strcpy(symbol->symName,"\0");
