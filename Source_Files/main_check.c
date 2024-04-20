@@ -7,14 +7,14 @@ int main(int argc, char *argv[]){
     FILE *input;
     char filename[100];
     frontend_ast *ast = NULL;
-    char *line1 = "MAIN: .data 1,x,LIST[x]";
+    char *line1 = "MAIN: prn label[sz ]";
     char *line = NULL,c;
     int series;
 
     
     /*"STR: .data 5,3,2,1,x,yz,LIST[3]"*/
 
-    series = 0;
+    series = 1;
     if(series == 1){
 
         if(argc < 2){
@@ -33,6 +33,7 @@ int main(int argc, char *argv[]){
             line = read_line_input(c, input);
             ast = frontend(line);
             frontend_free(ast);
+            free(line);
         }
         fclose(input);
     }
@@ -45,9 +46,9 @@ int main(int argc, char *argv[]){
         strcpy(line, line1);
         ast = frontend(line);
         frontend_free(ast);
+        free(line);
     }
     
-    if(line) free(line);
     return 0;
 }
 
@@ -75,7 +76,7 @@ void print_ast(frontend_ast *ast,const char *line){
     };
 
     int i;
-    printf("The processed line of the AST is: [%s]\n", line);
+    printf("The processed line of the AST is: {%s}\n", line);
     if(!isEmptyString((*ast).errors)){
         printf("The AST errors are: %s\n", (*ast).errors);
         return;
