@@ -126,7 +126,7 @@ typedef struct dir_op{
 } dir_operands;
 
 /* The structure of the AST itself */
-typedef struct frontend{
+typedef struct ast_structure{
     char errors[INIT_ERROR_LEN]; /*NULL if no errors are found*/
     char label[MAX_LABEL_LEN + 1]; /*the label of the entire line*/
     line_type typeofLine; /*either instruction or directive*/
@@ -141,7 +141,7 @@ typedef struct frontend{
         dir_operands  dir_ops;
     } operands;
 
-} frontend_ast;
+} ast_tree;
 
 /*************************************************************************************/
 /*************************************************************************************/
@@ -158,21 +158,21 @@ typedef struct frontend{
  * @param line the string which represents the line of assembly code.
  * @return frontend_ast* a pointer to the AST which describes the line of assembly code 
  */
-frontend_ast *frontend(char* line);
+ast_tree *ast_line(char* line);
 
 /**
  * @brief This function initializes the AST structure.
  * 
  * @param ast the AST structure to be initialized.
  */
-void frontend_init(frontend_ast *ast);
+void init_ast(ast_tree *ast);
 
 /**
  * @brief This function frees the memory allocated for the AST structure.
  * 
  * @param ast the AST structure to be freed.
  */
-void frontend_free(frontend_ast *ast);
+void free_ast(ast_tree *ast);
 
 /**
  * @brief This functions checks if the label at the beginning of the line is legal.
@@ -184,7 +184,7 @@ void frontend_free(frontend_ast *ast);
  * @param arg Flag that indicates whether the label an argument or it is a label of a line. 1 if it is an argument, 0 otherwise.
  * @return char* The label if it is legal, NULL otherwise.
  */
-char *check_legal_label(frontend_ast *ast, char *str,int arg);
+char *check_legal_label(ast_tree *ast, char *str,int arg);
 
 /**
  * @brief This function checks whether the line is a directive line, and if it is, it processes the directive in it.
@@ -193,7 +193,7 @@ char *check_legal_label(frontend_ast *ast, char *str,int arg);
  * @param line the line of assembly code to be processed.
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_directive(frontend_ast *ast, char *line);
+int check_directive(ast_tree *ast, char *line);
 
 /**
  * @brief This function checks whether the line is an instruction line, 
@@ -203,7 +203,7 @@ int check_directive(frontend_ast *ast, char *line);
  * @param line the line of assembly code to be processed.
  * @return int 1 if the instruction is legal, 0 otherwise.
  */
-int check_instruction(frontend_ast *ast, char *line);
+int check_instruction(ast_tree *ast, char *line);
 
 /**
  * @brief this function checks whether a string is empty or not.+
@@ -308,7 +308,7 @@ int check_brackets(char *str,char c);
  * @return *offset pointer to the legal offset structure if the check was legal, 
  * and an offset with label of NULL if it's not an offset, and NULL if memory allocation in it failed.
  */
-offset *check_label_offset(frontend_ast *ast, char *str);
+offset *check_label_offset(ast_tree *ast, char *str);
 
 /**
  * @brief Assigns the directive/instruction to the AST structure as a line_type enumeration.
@@ -317,7 +317,7 @@ offset *check_label_offset(frontend_ast *ast, char *str);
  * @param type the type of the line recieved - directive or instruction.
  * @param i the index of the directive/instruction in the directives list/operation codes array.
  */
-void assign_ast_dir_inst(frontend_ast *ast,line_type type,int i);
+void assign_ast_dir_inst(ast_tree *ast,line_type type,int i);
 
 /**
  * @brief This function checks the legallity operands of the entry/extern directive. 
@@ -326,7 +326,7 @@ void assign_ast_dir_inst(frontend_ast *ast,line_type type,int i);
  * @param line the line of assembly code to be processed. 
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_entry_extern(frontend_ast *ast, char *line);
+int check_entry_extern(ast_tree *ast, char *line);
 
 /**
  * @brief This function checks the legallity for the operands of the .data directive. 
@@ -335,7 +335,7 @@ int check_entry_extern(frontend_ast *ast, char *line);
  * @param line the line of assembly code to be processed.
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_data_dir(frontend_ast *ast, char *line);
+int check_data_dir(ast_tree *ast, char *line);
 
 /**
  * @brief This function checks the legallity for the operands of the .string directive. 
@@ -344,7 +344,7 @@ int check_data_dir(frontend_ast *ast, char *line);
  * @param line the line of assembly code to be processed. 
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_string(frontend_ast *ast, char *line);
+int check_string(ast_tree *ast, char *line);
 
 /**
  * @brief This function checks the legallity for the operands of the .define directive. 
@@ -353,7 +353,7 @@ int check_string(frontend_ast *ast, char *line);
  * @param line the line of assembly code to be processed. 
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_define(frontend_ast *ast, char *line);
+int check_define(ast_tree *ast, char *line);
 
 /**
  * @brief This function checks the legallity for the operands of the instruction. 
@@ -363,7 +363,7 @@ int check_define(frontend_ast *ast, char *line);
  * @param opcodeNum the number of the instruction in the array of the operations for instructions.
  * @return int 1 if the directive is legal, 0 otherwise.
  */
-int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum);
+int check_inst_operands(ast_tree *ast, char *line,int opcodeNum);
 
 /**
  * @brief this function checks whether the recieved string is in the format of
@@ -376,7 +376,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum);
  * @return address_0_op pointer to the structure that contains all the information about an address zero type operand.
  * NULL if the string is not in the format.
  */
-address_0_op *address_type_0(frontend_ast *ast,char *str);
+address_0_op *address_type_0(ast_tree *ast,char *str);
 
 /**
  * @brief This function checks whether there is a newline character in the middle of the recieved string.
@@ -386,23 +386,34 @@ address_0_op *address_type_0(frontend_ast *ast,char *str);
  */
 int check_mid_newline(char *line);
 
+
+/*checks if the first character to appear (except white spaces)
+is a semi colon
+returns - 0 if a semi colon does not appear first
+          1 if semi colon does appear first after white spaces
+         -1 if the first character is semicolon, meaning it's a comment line*/
+int is_first_semicolon(ast_tree *ast,char *line);
+
 /**
  * @brief prints the AST - including all the substructures
  * 
  * @param ast the AST to be printed
  * @param line the line of the assembly code the AST describes
  */
-void print_ast(frontend_ast *ast,const char *line);
+void print_ast(ast_tree *ast,const char *line);
 
 /*this function creates a char** pointer via memory allocation
  * for the my_strtok function.*/
 char **create_saveptr(char **saveptr);
 
 /*like strcpy but with dynamic allocation of space in dest*/
-char *copystr_calloc(frontend_ast *ast, char* dest, const char *src);
+char *copystr_calloc(ast_tree *ast, char* dest, const char *src);
 
 /*freeing the provided offset structure*/
 void free_offset_struct(offset *offset_var);
+
+/*freeing the provided address_0_op structure*/
+void free_op_address_0(address_0_op *operand_type_0);
 
 /*************************************************************************************/
 /*************************************************************************************/
