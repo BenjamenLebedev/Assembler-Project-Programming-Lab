@@ -29,6 +29,7 @@ frontend_ast *frontend(char* line){
     frontend_ast *ast; 
     char *copy_line,*char_skip,*label;
     int check_dir,check_inst,check_empty,check_semicolon;
+    int mid_newline;
 
     /* Allocate memory for the AST */
     ast = (frontend_ast *) calloc(1, sizeof(frontend_ast));
@@ -62,14 +63,18 @@ frontend_ast *frontend(char* line){
     strcpy(copy_line,line);
 
     /* a case where a newline character is somewhere in the middle - cutting the line off*/
-    if(strchr(line, '\n') && line[strlen(line) - 1] != '\n' && check_mid_newline(line)){
+    if(strchr(line, '\n') && line[strlen(line) - 1] != '\n' && (mid_newline = check_mid_newline(line))){
         strcpy(ast->errors, "a newline character appears in the middle of the line\n");
         ast->typeofLine = error;
         print_ast(ast,copy_line);
         free(copy_line);
         return ast;
-    } 
-
+    }
+    if(!mid_newline && FOUND_ALLOC_ERROR){
+        ast->typeofLine = error;
+        free(copy_line);
+        return ast;
+    }
     
     /* found ; at the start of the line signifying it's a possible comment line*/
     /* Or if the line is just empty - only white spaces */
@@ -95,7 +100,6 @@ frontend_ast *frontend(char* line){
             ast->typeofLine = error;
             ast->label[0] = '\0';
             print_ast(ast,copy_line);
-            if(label) free(label);
             free(copy_line);
             return ast;
         }
