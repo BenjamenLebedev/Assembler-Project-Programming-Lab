@@ -68,6 +68,6 @@ void vector_destroy(Vector * v);
  * @brief macro looping through the vector.
  * 
  */
-#define LOOP(begin,end,v) for(begin   = vector_begin(v),end= vector_end(v);begin <= end;begin++)
+#define VECTOR_LOOP(begin,end,v) for(begin   = vector_begin(v),end= vector_end(v);begin <= end;begin++)
 
 #endif
