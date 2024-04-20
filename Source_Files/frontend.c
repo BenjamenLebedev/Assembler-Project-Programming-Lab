@@ -28,7 +28,7 @@ frontend_ast *frontend(char* line){
 
     frontend_ast *ast; 
     char *copy_line,*char_skip,*label;
-    int check_dir,check_inst,check_empty;
+    int check_dir,check_inst,check_empty,check_semicolon;
 
     /* Allocate memory for the AST */
     ast = (frontend_ast *) calloc(1, sizeof(frontend_ast));
@@ -73,17 +73,11 @@ frontend_ast *frontend(char* line){
     
     /* found ; at the start of the line signifying it's a possible comment line*/
     /* Or if the line is just empty - only white spaces */
-    check_empty = isEmptyString(trimStartEnd(line));
-    if(line[0] == ';' || check_empty){
-        ast->errors[0] = '\0';
+    check_empty = isEmptyString(line);
+    check_semicolon = is_first_semicolon(ast,line);
+    if(check_semicolon || check_empty){
+        if(check_empty) ast->errors[0] = '\0';
         ast->typeofLine = empty;
-        print_ast(ast,copy_line);
-        free(copy_line);
-        return ast;
-    }
-    else if(strchr(line,';') && line[0] != ';'){
-        strcpy(ast->errors, "the character ; appears illegally in the middle of the line\n");
-        ast->typeofLine = error;
         print_ast(ast,copy_line);
         free(copy_line);
         return ast;
@@ -100,6 +94,8 @@ frontend_ast *frontend(char* line){
             if(ast->errors[0] == '\0') strcpy(ast->errors, "Illegal declaration of label\n");
             ast->typeofLine = error;
             ast->label[0] = '\0';
+            print_ast(ast,copy_line);
+            if(label) free(label);
             free(copy_line);
             return ast;
         }
@@ -116,6 +112,7 @@ frontend_ast *frontend(char* line){
         if(!check_dir){
             ast->typeofLine = error;
             print_ast(ast,copy_line);
+            if(label) free(label);
             free(copy_line);
             return ast;
         }
@@ -127,6 +124,7 @@ frontend_ast *frontend(char* line){
         if(!check_inst){
             ast->typeofLine = error;
             print_ast(ast,copy_line);
+            if(label) free(label);
             free(copy_line);
             return ast;
         }
@@ -822,7 +820,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
                 if(!INST_OP_DATA(ast,index).data_option.label){
                     if(check_label) free(check_label);
                     if(check_offset) free_offset_struct(check_offset);
-                    free_op_address(operand_type_0);
+                    free_op_address_0(operand_type_0);
                     return 0;
                 } 
                 
@@ -838,7 +836,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
                 if(!INST_OP_DATA(ast,index).data_option.label){
                     if(check_label) free(check_label);
                     if(check_offset) free_offset_struct(check_offset);
-                    free_op_address(operand_type_0);
+                    free_op_address_0(operand_type_0);
                     return 0;
                 } 
                 
@@ -847,7 +845,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
                     if(!INST_OP_DATA(ast,index).offset.label){
                         if(check_label) free(check_label);
                         if(check_offset) free_offset_struct(check_offset);
-                        free_op_address(operand_type_0);
+                        free_op_address_0(operand_type_0);
                         return 0;
                     } 
                     index++;
@@ -865,7 +863,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
             if(!INST_OP_DATA(ast,index).data_option.label){
                 free(check_label);
                 free_offset_struct(check_offset);
-                free_op_address(operand_type_0);
+                free_op_address_0(operand_type_0);
                 return 0;
             }
             index++;
@@ -880,7 +878,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
             if(!INST_OP_DATA(ast,index).data_option.label){
                 if(check_label) free(check_label);
                 free_offset_struct(check_offset);
-                free_op_address(operand_type_0);
+                free_op_address_0(operand_type_0);
                 return 0;
             }
 
@@ -889,7 +887,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
                 if(!INST_OP_DATA(ast,index).offset.label){
                     if(check_label) free(check_label);
                     free_offset_struct(check_offset);
-                    free_op_address(operand_type_0);
+                    free_op_address_0(operand_type_0);
                     return 0;
                 }
                 index++;
@@ -907,7 +905,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
         if(operand_type_0->type == none_0 && !check_label && !check_offset->label_array && check_reg == -1){
             strcpy(ast->errors, "Illegal operand for instruction\n");
             free_offset_struct(check_offset);
-            free_op_address(operand_type_0);
+            free_op_address_0(operand_type_0);
             FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
@@ -916,7 +914,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
         if(check_label) free(check_label);
 
         /*freeing the address_0_op variable - and it's subcomponents if those were dynamically allocated*/
-        free_op_address(operand_type_0);
+        free_op_address_0(operand_type_0);
 
         /*freeing the offset variable and it's subcomponents*/
         free_offset_struct(check_offset);
@@ -1151,7 +1149,7 @@ void free_offset_struct(offset *offset_var){
     free(offset_var);
 }
 
-void free_op_address(address_0_op *operand_type_0){
+void free_op_address_0(address_0_op *operand_type_0){
     if(operand_type_0->type == label_0)
         free(operand_type_0->option.label);    
     
@@ -1522,4 +1520,25 @@ int check_brackets(char *str,char c){
     }
 
     return 0;
+}
+
+int is_first_semicolon(frontend_ast *ast,char *line){
+    int i,len;
+    char *first_semicolon;
+
+    if(line[0] == ';') return -1; /*a legal comment line*/
+
+    first_semicolon = strchr(line,';');
+    if(!first_semicolon) return 0; /*if a semicolon was not found*/
+    len = strlen(line);
+    for(i = 0; i < len && first_semicolon; i++){
+        /*a non space character before the semicolon*/
+        if(!isspace(line[i]) && (first_semicolon > &line[i])){
+            return 0;
+        }
+        if(first_semicolon < &line[i]) break;
+        
+    }
+    strcpy(ast->errors, "illegal comment format. Comment line must start with a semicolon.\n");
+    return 1;
 }
