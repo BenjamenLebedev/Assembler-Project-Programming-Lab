@@ -147,7 +147,7 @@ int make_extern_file(const struct translation_unit *translation_unit, char *File
     }
     if(file_ext){
         printf("in extern if(file_ext) func\n");
-        LOOP(begin, end, translation_unit->externals) {
+        VECTOR_LOOP(begin, end, translation_unit->externals) {
             if (*begin) {
                 external = (struct ext *) *begin;
                 printf("********* extern: %s, count: %d\n", external->ext_name, external->address_count); 
@@ -198,7 +198,7 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
     }
     if(file_ent){
         printf("in extern if(file_ext) func\n");
-        LOOP(begin, end, translation_unit->symbols) {
+        VECTOR_LOOP(begin, end, translation_unit->symbols) {
             if (*begin) {
                 entrie = (struct symbol *) *begin;   
                 if(entrie->symType == entryDataSymbol || entrie->symType == entryCodeSymbol ){
@@ -235,8 +235,8 @@ void mergeSort(void **arr, int n){
 
     if(n < 2) return;
     mid = n/2;
-    l = (void **) calloc(mid, sizeof(void *));
-    r = (void **) calloc(n-mid, sizeof(void *));
+    l = (void **) malloc(mid * sizeof(void *));
+    r = (void **) malloc((n-mid) * sizeof(void *));
 
     
     for(i = 0; i < mid; i++){

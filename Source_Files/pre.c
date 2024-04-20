@@ -305,6 +305,5 @@ char * preprocessor(char * name){
     fclose(file_as);
     fclose(file_am);
     return file_am_name;
-    /*NEED TO  FREE FILE AM NAME */
 
 }
