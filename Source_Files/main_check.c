@@ -2,12 +2,12 @@
 #include "../Header_Files/global_var.h"
 #include "../Header_Files/mid.h"
 
-int main(int argc, char *argv[]){
+int mains(int argc, char *argv[]){
 
     FILE *input;
     char filename[100];
-    frontend_ast *ast = NULL;
-    char *line1 = "MAIN: prn label[sz ]";
+    ast_tree *ast = NULL;
+    char *line1 = " as : sda   ; asdasd";
     char *line = NULL,c;
     int series;
 
@@ -31,8 +31,8 @@ int main(int argc, char *argv[]){
 
         while((c = fgetc(input)) != EOF){
             line = read_line_input(c, input);
-            ast = frontend(line);
-            frontend_free(ast);
+            ast = ast_line(line);
+            free_ast(ast);
             free(line);
         }
         fclose(input);
@@ -44,8 +44,8 @@ int main(int argc, char *argv[]){
             return 1;
         }
         strcpy(line, line1);
-        ast = frontend(line);
-        frontend_free(ast);
+        ast = ast_line(line);
+        free_ast(ast);
         free(line);
     }
     
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
 
 
 
-void print_ast(frontend_ast *ast,const char *line){
+void print_ast(ast_tree *ast,const char *line){
 
     op_code_args op_codes1[] = {
     {"mov",  2}, 
