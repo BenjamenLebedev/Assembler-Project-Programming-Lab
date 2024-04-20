@@ -24,22 +24,22 @@ op_code_args op_codes[] = {
 /* Define the directives - for effective comparison */
 char *dir_list[] = {"entry" , "extern" , "data" , "string" , "define"};
 
-frontend_ast *frontend(char* line){
+ast_tree *ast_line(char* line){
 
-    frontend_ast *ast; 
+    ast_tree *ast; 
     char *copy_line,*char_skip,*label;
     int check_dir,check_inst,check_empty,check_semicolon;
     int mid_newline;
 
     /* Allocate memory for the AST */
-    ast = (frontend_ast *) calloc(1, sizeof(frontend_ast));
+    ast = (ast_tree *) calloc(1, sizeof(ast_tree));
     if(ast == NULL){
         fprintf(stderr, "Error: Memory allocation failed for the AST structure\n");
         return ast;
     }
 
     /* initialize the AST */
-    frontend_init(ast);
+    init_ast(ast);
 
     /*If length of the line exceeds the maximal length - we skip that line*/
     if(strlen(line) > MAX_LINE_LEN){
@@ -147,7 +147,7 @@ frontend_ast *frontend(char* line){
 }
 
 
-char *check_legal_label(frontend_ast *ast, char *str,int arg){
+char *check_legal_label(ast_tree *ast, char *str,int arg){
 
     char *token,*label = NULL;
     int i,error_flag; /*error_flag - 1 means error exists. 0 means not*/
@@ -252,7 +252,7 @@ int find_dir(char *str){
     return 0;
 }
 
-int check_directive(frontend_ast *ast, char *line){
+int check_directive(ast_tree *ast, char *line){
 
     char *token;
     int i,j,check_args;
@@ -321,7 +321,7 @@ int check_directive(frontend_ast *ast, char *line){
     return 1;
 }
 
-int check_entry_extern(frontend_ast *ast, char *line){
+int check_entry_extern(ast_tree *ast, char *line){
     
     char *token, *check_label;
     int index;
@@ -383,7 +383,7 @@ int check_entry_extern(frontend_ast *ast, char *line){
     return 1;
 }
 
-int check_data_dir(frontend_ast *ast, char *line){
+int check_data_dir(ast_tree *ast, char *line){
 
     char *token,*token_ind,*is_label = NULL;
     char token_backup[MAX_LINE_LEN],*delim = ",";
@@ -506,7 +506,7 @@ int check_data_dir(frontend_ast *ast, char *line){
     return 1;
 }
 
-int check_string(frontend_ast *ast, char *line){
+int check_string(ast_tree *ast, char *line){
     char *start,*end;
     int i,j,index,len;
 
@@ -573,7 +573,7 @@ int check_string(frontend_ast *ast, char *line){
     return 1;
 }
 
-int check_define(frontend_ast *ast, char *line){
+int check_define(ast_tree *ast, char *line){
 
     char *token,*label;
     char *delim = "=";
@@ -665,7 +665,7 @@ int check_define(frontend_ast *ast, char *line){
 /**************************************************************************************/
 
 
-int check_instruction(frontend_ast *ast, char *line){
+int check_instruction(ast_tree *ast, char *line){
     char *token;
     int i,j;
     /*saveptr - to serve as the starting point in tokenation
@@ -714,7 +714,7 @@ int check_instruction(frontend_ast *ast, char *line){
     return 1;
 }
 
-int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
+int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
     
     char *token,*token_ind,delim[2],token_backup[MAX_LINE_LEN];
     int index,check_reg,i; /*index indicates the number of legal operands scanned*/
@@ -978,7 +978,7 @@ int check_inst_operands(frontend_ast *ast, char *line,int opcodeNum){
 /************************************************************************************/
 /************************************************************************************/
 
-offset *check_label_offset(frontend_ast *ast, char *str){
+offset *check_label_offset(ast_tree *ast, char *str){
     offset *offset_var = NULL;
     /*label_array - the name of the array that defines the offset
     label_offset  - the name of the offset value inside if it's defined by a label*/
@@ -1167,7 +1167,7 @@ void free_op_address_0(address_0_op *operand_type_0){
     free(operand_type_0);
 }
 
-address_0_op *address_type_0(frontend_ast *ast,char *str){
+address_0_op *address_type_0(ast_tree *ast,char *str){
 
     address_0_op *result = NULL; /*the struct that contains all 3 options for const number operand*/
     char *check_label;
@@ -1265,7 +1265,7 @@ address_0_op *address_type_0(frontend_ast *ast,char *str){
     return result;
 }
 
-char *copystr_calloc(frontend_ast *ast, char* dest, const char *src){
+char *copystr_calloc(ast_tree *ast, char* dest, const char *src){
     dest = (char *) calloc(strlen(src) + 1,sizeof(char));
     if(!dest){
         strcpy(ast->errors, "Error: Memory allocation failed for label/string variable in AST\n");
@@ -1363,7 +1363,7 @@ int is_dir(char* str){
     return -1;
 }
 
-void assign_ast_dir_inst(frontend_ast *ast,line_type type,int i){
+void assign_ast_dir_inst(ast_tree *ast,line_type type,int i){
 
     int j;
     /*just assigning the type of operation to the AST - and 
@@ -1428,7 +1428,7 @@ int isEmptyString(char* str){
     return 0;
 }
 
-void frontend_init(frontend_ast *ast){
+void init_ast(ast_tree *ast){
     
     ast->typeofLine = empty;
     ast->errors[0] = '\0'; /*initialize the errors string as empty string*/
@@ -1436,7 +1436,7 @@ void frontend_init(frontend_ast *ast){
 
 }
 
-void frontend_free(frontend_ast *ast){
+void free_ast(ast_tree *ast){
     int i;
 
     if(ast->typeofLine == inst){
@@ -1526,7 +1526,7 @@ int check_brackets(char *str,char c){
     return 0;
 }
 
-int is_first_semicolon(frontend_ast *ast,char *line){
+int is_first_semicolon(ast_tree *ast,char *line){
     int i,len;
     char *first_semicolon;
 
