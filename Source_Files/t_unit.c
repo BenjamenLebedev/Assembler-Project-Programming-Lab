@@ -6,6 +6,10 @@
 struct translation_unit *create_translation_unit() {
     /*allocate memory for the translation unit*/
     struct translation_unit *unit = (struct translation_unit *)malloc(sizeof(struct translation_unit));
+    if(unit == NULL) {
+        printf("Error: Memory allocation failed for translation unit.\n");
+        return NULL;
+    }
     if (unit != NULL) { /*check if memory allocation succeeded*/
         /*initialize values*/
         unit->code_image = NULL;
