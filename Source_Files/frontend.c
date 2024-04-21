@@ -98,12 +98,12 @@ ast_tree *ast_line(char* line){
         if(!(label = check_legal_label(ast, line, 0))){ /*checking the label*/
             if(ast->errors[0] == '\0') strcpy(ast->errors, "Illegal declaration of label\n");
             ast->typeofLine = error;
-            ast->label[0] = '\0';
+            ast->label_of_line[0] = '\0';
             print_ast(ast,copy_line);
             free(copy_line);
             return ast;
         }
-        else strcpy(ast->label, label);
+        else strcpy(ast->label_of_line, label);
     }
 
     /* If a label was found, we move past it to analyze the rest of the line*/
@@ -208,6 +208,7 @@ char *check_legal_label(ast_tree *ast, char *str,int arg){
             FREE_SAVEPTR(saveptr,movptr)
             return NULL;
         }
+        /*label = token;*/
     } 
     else label = NULL;
 
@@ -375,7 +376,7 @@ int check_entry_extern(ast_tree *ast, char *line){
 
     /*if we have a line label - it is meaningless for entry/extern so
     we delete it to prevent confusion*/
-    if(!isEmptyString(ast->label)) ast->label[0] = '\0';
+    if(!isEmptyString(ast->label_of_line)) ast->label_of_line[0] = '\0';
     
     free(check_label);
     FREE_SAVEPTR(saveptr,movptr)
@@ -588,7 +589,7 @@ int check_define(ast_tree *ast, char *line){
     memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     /* if a legal line label was found before a define line of .define directive - it's an error*/
-    if(!isEmptyString(ast->label)){
+    if(!isEmptyString(ast->label_of_line)){
         strcpy(ast->errors, "A label cannot be declared on a line with .define directive\n");
         FREE_SAVEPTR(saveptr,movptr)
         return 0;
@@ -1432,7 +1433,7 @@ void init_ast(ast_tree *ast){
     
     ast->typeofLine = empty;
     ast->errors[0] = '\0'; /*initialize the errors string as empty string*/
-    ast->label[0] = '\0'; /*initialize the line label as empty string*/
+    ast->label_of_line[0] = '\0'; /*initialize the line label as empty string*/
 
 }
 
