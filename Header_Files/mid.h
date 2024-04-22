@@ -9,7 +9,7 @@
 
 typedef enum symType{ 
         entrySymbol,
-        externSymbol,
+        externSymbol, 
         codeSymbol,
         dataSymbol,
         entryCodeSymbol,
@@ -18,6 +18,7 @@ typedef enum symType{
 
 struct symbol{      /* תווית *//* hello: , x: ...*/
     int is_symbol_define;
+    int num_line_defined;
     char symName[MAX_LABEL_LEN];
     int address;
     symType symType;
@@ -85,6 +86,16 @@ struct symbol *does_symbol_exist(struct vector *symbol_vector, char *name);
  * @return struct symbol* pointer to the extern if found, else returns NULL
  */
 struct ext *does_extern_exist(struct vector *extern_vector, char *name);
+
+
+/**
+ * @brief adds an array of integers to the data image in the translation unit
+ * 
+ * @param unit pointer to the translation unit
+ * @param array pointer to the array of integers
+ * @param array_size size of the array
+ */
+void add_array_to_data_image(struct translation_unit *unit, int *array, size_t array_size);
 
 /**
  * @brief performs the first pass,
