@@ -63,7 +63,8 @@ ast_tree *ast_line(char* line){
     strcpy(copy_line,line);
 
     /* a case where a newline character is somewhere in the middle - cutting the line off*/
-    if(strchr(line, '\n') && line[strlen(line) - 1] != '\n' && (mid_newline = check_mid_newline(line))){
+    mid_newline = check_mid_newline(line);
+    if(strchr(line, '\n') && line[strlen(line) - 1] != '\n'&& mid_newline){
         strcpy(ast->errors, "a newline character appears in the middle of the line\n");
         ast->typeofLine = error;
         print_ast(ast,copy_line);
@@ -80,7 +81,7 @@ ast_tree *ast_line(char* line){
     /* Or if the line is just empty - only white spaces */
     check_empty = isEmptyString(line);
     check_semicolon = is_first_semicolon(ast,line);
-    if(check_semicolon || check_empty){
+    if(check_semicolon == -1 || check_empty){
         if(check_empty) ast->errors[0] = '\0';
         ast->typeofLine = empty;
         print_ast(ast,copy_line);
@@ -159,10 +160,8 @@ char *check_legal_label(ast_tree *ast, char *str,int arg){
     error_flag = 0;
     /* extracting the part of the label, before a colon - if it's a label at the start of the line*/
     if(!arg){
-        saveptr = create_saveptr(saveptr);
+        saveptr = create_saveptr(saveptr,movptr);
         if(!saveptr) return NULL;
-        *saveptr = movptr;
-        memset(movptr,0,MAX_LINE_LEN);
 
         token = my_strtok(str, ":", saveptr);
         if(isEmptyString(token)){ /* if nothing is before the colon*/
@@ -261,10 +260,8 @@ int check_directive(ast_tree *ast, char *line){
     movptr - saves the string and draws out the tokens in tokenation*/
     char **saveptr = NULL,movptr[MAX_LINE_LEN];
 
-    saveptr = create_saveptr(saveptr);
+    saveptr = create_saveptr(saveptr,movptr);
     if(!saveptr) return 0;
-    *saveptr = movptr;
-    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
 
     /* extracting the part of the directive, after a dot */
@@ -330,13 +327,10 @@ int check_entry_extern(ast_tree *ast, char *line){
     movptr - saves the string and draws out the tokens in tokenation*/
     char **saveptr = NULL,movptr[MAX_LINE_LEN];
 
-    saveptr = create_saveptr(saveptr);
+    saveptr = create_saveptr(saveptr,movptr);
     if(!saveptr) return 0;
-    *saveptr = movptr;
-    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
 
-    
     token = my_strtok(line, " ", saveptr);
     /* if there's nothing in the recieved string, then we have no operand */
     if(!token || isEmptyString(token)){
@@ -389,15 +383,12 @@ int check_data_dir(ast_tree *ast, char *line){
     char *token,*token_ind,*is_label = NULL;
     char token_backup[MAX_LINE_LEN],*delim = ",";
     int is_int,index,i;
-    offset *is_label_offset;
     /*saveptr - to serve as the starting point in tokenation
     movptr - saves the string and draws out the tokens in tokenation*/
     char **saveptr = NULL,movptr[MAX_LINE_LEN];
 
-    saveptr = create_saveptr(saveptr);
+    saveptr = create_saveptr(saveptr,movptr);
     if(!saveptr) return 0;
-    *saveptr = movptr;
-    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     /*starting to check each operand between commas*/
     token = my_strtok(line,delim, saveptr);
@@ -427,20 +418,11 @@ int check_data_dir(ast_tree *ast, char *line){
         if(!is_label && FOUND_ALLOC_ERROR){
             FREE_SAVEPTR(saveptr,movptr)
             return 0;
-        } 
-        /*an integer represented by an expression label[something] - 
-        meaning represented by the result of a data array offset*/
-        is_label_offset = check_label_offset(ast,token);
-        if(!is_label_offset){
-            if(is_label) free(is_label);
-            FREE_SAVEPTR(saveptr,movptr)
-            return 0;
         }
 
         /*if the operand matched none of the 3 allowed types*/
-        if(!is_int && !is_label && !is_label_offset->label_array){ /* token is not a variable name or a legal integer - either not a number or the integer is out of bounds */
+        if(!is_int && !is_label){ /* token is not a variable name or a legal integer - either not a number or the integer is out of bounds */
             strcpy(ast->errors, "Illegal data argument\n");
-            free_offset_struct(is_label_offset);
             FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
@@ -456,39 +438,11 @@ int check_data_dir(ast_tree *ast, char *line){
             DIR_OP_DATA(ast,index).data_option.label = copystr_calloc(ast,DIR_OP_DATA(ast,index).data_option.label,is_label);
             if(!DIR_OP_DATA(ast,index).data_option.label){
                 free(is_label);
-                if(is_label_offset) free_offset_struct(is_label_offset);
                 FREE_SAVEPTR(saveptr,movptr)
                 return 0;
             } 
             index++;
         }
-        else if(is_label_offset->label_array){ /*offset value representation*/
-            DIR_OP_DATA(ast,index).type_data = label_data;
-            /*if we have label[offset] -- copying the 'label' part*/
-            DIR_OP_DATA(ast,index).data_option.label = copystr_calloc(ast,DIR_OP_DATA(ast,index).data_option.label , is_label_offset->label_array);
-            if(!DIR_OP_DATA(ast,index).data_option.label){
-                if(is_label) free(is_label);
-                free_offset_struct(is_label_offset);
-                FREE_SAVEPTR(saveptr,movptr)
-                return 0;
-            } 
-
-            if(is_label_offset->offset_val.label){
-                /*if we have label[offset] -- copying the 'offset' part*/
-                DIR_OP_DATA(ast,index).offset.label = copystr_calloc(ast,DIR_OP_DATA(ast,index).offset.label , is_label_offset->offset_val.label);
-                if(!DIR_OP_DATA(ast,index).offset.label){
-                    if(is_label) free(is_label);
-                    free_offset_struct(is_label_offset);
-                    FREE_SAVEPTR(saveptr,movptr)
-                    return 0;
-                }
-                index++;
-            }
-            else if(is_label_offset->offset_val.num != -1){
-                DIR_OP_DATA(ast,index++).offset.num = is_label_offset->offset_val.num;
-            }
-               
-        } /* end if(is_label_offset->label_array)*/
         
         /*increasing the total number of operands between iterations*/
         ast->operands.dir_ops.num_count = index;
@@ -497,9 +451,7 @@ int check_data_dir(ast_tree *ast, char *line){
         if(++i > 0 && strchr(token_ind,',')) token_ind += (int)strlen(token_backup) + 1;
         token = my_strtok(NULL, delim, saveptr);
     
-        /*freeing the offset structure*/
         if(is_label) free(is_label);
-        free_offset_struct(is_label_offset);
 
     } /* end while loop*/
 
@@ -583,10 +535,8 @@ int check_define(ast_tree *ast, char *line){
     movptr - saves the string and draws out the tokens in tokenation*/
     char **saveptr = NULL,movptr[MAX_LINE_LEN];
 
-    saveptr = create_saveptr(saveptr);
+    saveptr = create_saveptr(saveptr,movptr);
     if(!saveptr) return 0;
-    *saveptr = movptr;
-    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     /* if a legal line label was found before a define line of .define directive - it's an error*/
     if(!isEmptyString(ast->label_of_line)){
@@ -673,10 +623,8 @@ int check_instruction(ast_tree *ast, char *line){
     movptr - saves the string and draws out the tokens in tokenation*/
     char **saveptr = NULL,movptr[MAX_LINE_LEN];
 
-    saveptr = create_saveptr(saveptr);
+    saveptr = create_saveptr(saveptr,movptr);
     if(!saveptr) return 0;
-    *saveptr = movptr;
-    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     /*first token - the instruction operation code (mov,add, etc...)*/
     token = my_strtok(line, " ", saveptr);
@@ -743,10 +691,8 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
     strcpy(delim, ",");
     token = NULL;
 
-    saveptr = create_saveptr(saveptr);
+    saveptr = create_saveptr(saveptr,movptr);
     if(!saveptr) return 0;
-    *saveptr = movptr;
-    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     if(op_codes[opcodeNum].arg_num != 0){
         token = my_strtok(line, delim, saveptr);
@@ -1017,13 +963,11 @@ offset *check_label_offset(ast_tree *ast, char *str){
         return offset_var;
     }
 
-    saveptr = create_saveptr(saveptr);
+    saveptr = create_saveptr(saveptr,movptr);
     if(!saveptr){
         free_offset_struct(offset_var);
         return NULL;
     }
-    *saveptr = movptr;
-    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     /*finding anything between closing and opening brackets*/
     token = my_strtok(str,"[]",saveptr);
@@ -1241,8 +1185,8 @@ address_0_op *address_type_0(ast_tree *ast,char *str){
         if(check_offset->offset_val.label){
             result->option.label_offset.offset_val.label = copystr_calloc(ast,result->option.label_offset.offset_val.label , check_offset->offset_val.label);
             if(!result->option.label_offset.offset_val.label){
-                if(check_label) free(check_label);
                 free_offset_struct(check_offset);
+                if(check_label) free(check_label);
                 if(result->option.label) free(result->option.label);
                 free(result->option.label_offset.label_array);
                 free(result);
@@ -1276,12 +1220,14 @@ char *copystr_calloc(ast_tree *ast, char* dest, const char *src){
     return dest;
 }
 
-char **create_saveptr(char **saveptr){
+char **create_saveptr(char **saveptr, char movptr[]){
     saveptr = (char **) calloc(1,sizeof(char *));
     if(!saveptr){
         printf("Error: Memory allocation failed for *saveptr.\n");
         return NULL;
     }
+    *saveptr = movptr;
+    memset(movptr,0,MAX_LINE_LEN);
     return saveptr;
 }
 
@@ -1292,10 +1238,8 @@ int check_mid_newline(char *line){
     movptr - saves the string and draws out the tokens in tokenation*/
     char **saveptr = NULL,movptr[MAX_LINE_LEN];
 
-    saveptr = create_saveptr(saveptr);
+    saveptr = create_saveptr(saveptr,movptr);
     if(!saveptr) return 0;
-    *saveptr = movptr;
-    memset(movptr,0,MAX_LINE_LEN); /* setting the array to zero*/
 
     i = 0;
     token = my_strtok(line, "\n", saveptr);
@@ -1369,7 +1313,6 @@ void assign_ast_dir_inst(ast_tree *ast,line_type type,int i){
     int j;
     /*just assigning the type of operation to the AST - and 
     the operation's name*/
-    /*in case it's an instruction*/
     for(j = 0; (type == inst && j < OPCODE_NUM) || \
     ((type == dir || type == define) && j < DIR_NUM); j++){
         if(i == j){
