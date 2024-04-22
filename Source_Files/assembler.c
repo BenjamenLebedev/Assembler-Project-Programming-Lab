@@ -8,7 +8,18 @@
 #include "../Header_Files/pre.h"
 #include "../Header_Files/vector.h"
    
-  
+/**
+ * @brief This program is an assembler for the assembly language described in the project.
+ * the program recieves filenames of type .as but without the .as suffix.
+ * the program will then assemble the files and create the following files: .ob, .ent, .ext.
+ * ob - object file - a text file containing the machine code in base 4 encrypted (base 4 but with 0,1,2,3 replaced with * # % ! respectively) 
+ * ent - entries file - contains the names of the symbols that were declared by .entry and the address of the lines which are labeled with those symbols.
+ * ext - externals file - contains the names of the symbols that were declared by .extern and the address of the lines at which there's usage of those.
+ * 
+ * @param argc number of arguments - first argument is the name of the program. the rest are the names of the files to be assembled.
+ * @param argv the array of the filenames.
+ * @return * int 
+ */
 int main(int argc, char *argv[]) {
     int i;
     FILE *amFile;
@@ -16,11 +27,14 @@ int main(int argc, char *argv[]) {
     void *const *begin;
     void *const *end;
     struct symbol *symbol; 
-    
+    struct translation_unit *translation_unit;
 
-    struct translation_unit *translation_unit = create_translation_unit();
+    if(argc < 2){
+        printf("Error: to use the assembler at least one filename has to be provided\n");
+        return 1;
+    }
 
-    for (i = 1; i < argc; i++){
+    for (i = 1; i < argc; i++){        
 
         amFileName = preprocessor(argv[i]);
         if(amFileName){
@@ -34,6 +48,7 @@ int main(int argc, char *argv[]) {
             printf("---------------------------------------------------------------------------------------------------- \n");
         }
         
+        translation_unit = create_translation_unit();
 
         amFile = fopen(amFileName, "r");
         if(!amFile){
