@@ -5,7 +5,26 @@
 #include <stdlib.h> 
 #include "../Header_Files/pre.h"
 #include "../Header_Files/global_var.h"
+#include "../Header_Files/ast.h"
 
+/*checking to see if the */
+int is_name_protected(char name[MAX_LINE_LEN]) {
+    /* check if the name is a register */
+    if (is_reg(name) != -1) {
+        return TRUE;
+    }
+
+    /* check if the name is in the op_codes array */
+    if (is_inst(name) != -1) {
+        return TRUE;
+    }
+
+    /* check if the name is in the dir_list array */
+    if (is_dir(name) != -1) {
+        return TRUE;
+    }
+    return FALSE;
+}
 
 /*  Function to add a new line of information to a macro */
 void addMacroInformation(struct macro* m, const char* line) {
@@ -16,8 +35,8 @@ void addMacroInformation(struct macro* m, const char* line) {
         exit(EXIT_FAILURE);
     }
 
-    strncpy(info->line, line, MAX_LINE_LENGTH -1);
-    info->line[MAX_LINE_LENGTH -1 ] = '\0';   /* null-termination */
+    strncpy(info->line, line, MAX_LINE_LEN -1);
+    info->line[MAX_LINE_LEN -1 ] = '\0';   /* null-termination */
     info->next = NULL;
 
      /* If the macro information list is empty, set the new info as the head */
@@ -34,13 +53,12 @@ void addMacroInformation(struct macro* m, const char* line) {
 }
 
 /*  Function to add a new macro to the macro list */
-void addMacro(struct macro** macros, const char* name) {
+void addMacro(struct macro** macros, const char* name, int * is_error) {
     struct macro* m = (struct macro*)malloc(sizeof(struct macro));
     size_t len;
     if (m == NULL) {
          /* Handle memory allocation error */
         fprintf(stderr, "Memory allocation error\n");
-        exit(EXIT_FAILURE);
     }
 
     len = strlen(name);
@@ -49,8 +67,8 @@ void addMacro(struct macro** macros, const char* name) {
         strncpy(m->name, name, len - 1);
         m->name[len - 1] = '\0';
     } else {
-        strncpy(m->name, name, MAX_LINE_LENGTH - 1);
-        m->name[MAX_LINE_LENGTH - 1] = '\0';
+        strncpy(m->name, name, MAX_LINE_LEN - 1);
+        m->name[MAX_LINE_LEN - 1] = '\0';
     }
     m->info_head = NULL;
     m->next = NULL;
@@ -58,13 +76,23 @@ void addMacro(struct macro** macros, const char* name) {
      /* If the macro list is empty, set the new macro as the head */
     if (*macros == NULL) {
         *macros = m;
+        printf("checking if name is protected");
+        if(is_name_protected(m->name)){
+            printf("error: name used for macro is a protected name");
+        }
     } else {
+        
          /* Otherwise, move on the list and append the new macro */
         struct macro* current = *macros;
         while (current->next != NULL) {
             current = current->next;
         }
         current->next = m;
+        printf("checking if name is protected");
+        if(is_name_protected(m->name)){
+            printf("error: name used for macro is a protected name");
+            *is_error = TRUE;
+        }
     }
 }
 
@@ -90,18 +118,16 @@ void displayMacros(const struct macro* macros) {
 
 
  void freeMacro_information(struct macro_information* info) {
-    struct macro_information* next_info = info->next;
+    /*struct macro_information* next_info = info->next;*/
     if(!info){
         printf("info is NULL in free_macros\n");
     }
     /*irritates throw the list to free all the macro information*/
         while (info != NULL) {
+            struct macro_information* temp = info->next; 
             free(info);
-            info = next_info; 
-            if(next_info){
-                next_info = next_info->next;
-            }
-        }
+            info = temp;
+        }        
 }
 
 void free_Macros(struct macro* macros) {
@@ -111,11 +137,10 @@ void free_Macros(struct macro* macros) {
     }
     /*irritates throw the list to free all the macros*/
     while (macros != NULL) {
+        next_macro = macros->next;
         freeMacro_information(macros->info_head);
         free(macros);
-        if(macros){
-            macros = next_macro;
-        } 
+        macros = next_macro;
     }
 } 
 
@@ -188,9 +213,9 @@ struct macro * is_string_macro(char * string, struct macro** original_macros){
     return NULL;
 }
 
-int macro_line_classifier(char * line, struct macro** macros, struct macro** macro){
+int macro_line_classifier(char * line, struct macro** macros, struct macro** macro, int * is_error){
     struct macro* wanted_macro = NULL;
-    char line_copy[MAX_LINE_LENGTH];
+    char line_copy[MAX_LINE_LEN];
     char * token;
 
     strcpy(line_copy, line);
@@ -205,7 +230,7 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
         token = strtok(NULL, " "); /*name of macro*/
         printf("in macro_definition, token: %s\n", token);
             if (token) {
-        addMacro(macros, token); /*create macro struct with the name of the macro */
+        addMacro(macros, token, is_error); /*create macro struct with the name of the macro */
         printf("adding first macro *******************************************************************\n");
         if(!macros){
             printf("macros is null*********************\n");
@@ -241,11 +266,41 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
     return 0;
 }
 
+char* read_line_input(char c,FILE* file){
+    char* inputLine = NULL;
+    char str_tmp[CHUNK_READ];
+    int len_input = 0, len_tmp = 0;
+
+    inputLine = (char *) realloc(inputLine,1);
+    if(!inputLine){
+        printf("********* Memory allocation error\n");
+    }
+    strncpy(inputLine,&c,1);
+    len_input++; 
+    do {
+        fgets(str_tmp, CHUNK_READ, file);
+        len_tmp = strlen(str_tmp);
+        inputLine = (char *) realloc(inputLine, len_input+len_tmp+1);
+        if(!inputLine){
+            printf("********* Memory allocation error\n");
+        }
+        strcpy(inputLine+len_input, str_tmp);
+        len_input += len_tmp;
+    } while (len_tmp==CHUNK_READ-1 && str_tmp[CHUNK_READ-2]!='\n');
+    
+    if(inputLine[strlen(inputLine) - 1] == '\n'){
+        inputLine[strlen(inputLine) - 1] = '\0';
+    }
+    return inputLine;
+}
+
 char * preprocessor(char * name){
+    int is_error = FALSE;
+
     struct macro* macros = NULL; /*data structure to holed the macros*/
     struct macro* macro = NULL;
     struct macro_information* current_info = NULL;
-    char line[MAX_LINE_LENGTH];         
+    char line[MAX_LINE_LEN];         
     FILE * file_as; /*the original file*/
     FILE * file_am; /*the file containing the assembly code after the preprocessor */
     char *as_extension = ".as";
@@ -268,8 +323,8 @@ char * preprocessor(char * name){
         return NULL;
     }
 
-    while(fgets(line,MAX_LINE_LENGTH, file_as) != 0){
-        switch(macro_line_classifier(line, &macros, &macro)){
+    while(fgets(line,MAX_LINE_LEN, file_as) != 0){
+        switch(macro_line_classifier(line, &macros, &macro, &is_error)){
             case 0: /*macro_definition*/
                 break;
             case 1: /* in_macro_definition */
@@ -301,9 +356,16 @@ char * preprocessor(char * name){
         free_Macros(macros);
     }
     free(file_as_name);
-    macros = NULL;
+/*     free(file_am_name); */
+/*     macros = NULL; */
     fclose(file_as);
     fclose(file_am);
+    if(is_error){
+        free(file_am_name);
+        return NULL;       
+    }
     return file_am_name;
+    
+    /*NEED TO  FREE FILE AM NAME */
 
 }
