@@ -33,8 +33,8 @@ extern char *dir_list[5];
 /* length of each word in command line, in bits */
 #define WORD_LEN 14
 
-/* Initial length for error string */
-#define INIT_ERROR_LEN 300
+/* Length of an error string */
+#define ERROR_LEN 200
 
 /* Total number of registers allowed in the system*/
 #define REG_NUM 8
@@ -45,13 +45,16 @@ extern char *dir_list[5];
 /* the number of legal directives for the assembler */
 #define DIR_NUM 5
 
+/*the maximal number of arguments in the .data directive*/
+#define DIR_DATA_SIZE MAX_LINE_LEN/4
+
 /*The starting value of the instruction counter*/
 #define IC_START 100
 
 /*the amount of characters read from input with each realloc*/
 #define CHUNK_READ 300
 
-/*all the */
+/*all the characters that are white spaces (save for newline character)*/
 #define SPACES  " \t\v\f"
 
 /* the maximal and minimal values of integer in the instructions for the fictional machine 
@@ -73,7 +76,13 @@ in the directives we use all 14 bits for the integer so the values are like this
 /****************Global functions - used by most of the source files*******************/
 /**************************************************************************************/
 
-
+/**
+ * @brief reads a line from the input file until a new line character is encountered or the end of the file is reached.
+ * 
+ * @param c the first character of the line. serves to check EOF is reached.
+ * @param file the file from which we read the line.
+ * @return char* string containing the line read from the input.
+ */
 char* read_line_input(char c,FILE* file);
 
 /**
