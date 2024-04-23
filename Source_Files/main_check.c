@@ -1,20 +1,48 @@
+
 #include "../Header_Files/ast.h"
 #include "../Header_Files/global_var.h"
+#include "../Header_Files/vector.h"
 #include "../Header_Files/mid.h"
+#include "../Header_Files/t_unit.h"
+#include "../Header_Files/back.h" 
+#include "../Header_Files/pre.h"
+#include "../Header_Files/vector.h"
 
 int mains(int argc, char *argv[]){
 
     FILE *input;
     char filename[100];
     ast_tree *ast = NULL;
-    char *line1 = " MAIN: .entry LIST\n";
+    char *line1 = " MAIN:  .data    1,2\n";
     char *line = NULL,c;
-    int series;
-
+    int series,precheck;
+    char *file_name;
     
-    /*"STR: .data 5,3,2,1,x,yz,LIST[3]"*/
 
-    series = 1;
+    precheck = 1;
+    if(precheck){
+
+        if(argc < 2){
+            printf("Error: no file name given\n");
+            return 1;
+        }
+
+        file_name = preprocessor(argv[1]);
+
+        if(file_name){
+            printf("---------------------------------------------------------------------------------------------------- \n");
+            printf("-------------------------------  preprocessor completed successfully ------------------------------- \n");
+            printf("---------------------------------------------------------------------------------------------------- \n");
+        }
+        else{
+            printf("---------------------------------------------------------------------------------------------------- \n");
+            printf("      -------------------------------  preprocessor error ------------------------------- \n");
+            printf("---------------------------------------------------------------------------------------------------- \n");
+        }
+
+        free(file_name);
+    }
+    series = -1;
     if(series == 1){
 
         if(argc < 2){
