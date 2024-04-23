@@ -1,12 +1,16 @@
 .entry LIST 
 .extern W 
 .define sz = 2
+mcr maico
 MAIN:   mov r3, LIST[sz]
 LOOP:   jmp L1
+endmr
         mcr m_mcr
                 cmp r3, #sz
                 bne END
         endmcr
+        
+        maico
         prn #-5
         mov STR[5], STR[2]
         sub r1, r4
