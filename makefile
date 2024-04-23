@@ -7,6 +7,7 @@ SRCS = ${shell ls ./Source_Files/*.c}
 OBJS = $(SRCS:.c=.o)
 LIB = ./Header_Files/*.h 
 OUT = ${shell ls *.am *.ob *.ent *.ext *.txt}
+ARGS = attempt1
 # Executable
 TARGET = assembler
 
@@ -24,3 +25,6 @@ $(TARGET): $(OBJS) $(LIB)
 # Clean up object files and executable
 clean:
 	rm -f $(OBJS) $(TARGET) $(OUT)
+
+valgrind:
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(TARGET) $(ARGS)
