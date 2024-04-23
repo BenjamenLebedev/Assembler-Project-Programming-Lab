@@ -33,14 +33,16 @@ void extern_dtor(void * item){
     free(item);
 }
 
-void init_symbol(struct symbol *symbol){
+struct symbol * init_symbol(struct symbol *symbol){
+    symbol = (struct symbol *) malloc(sizeof(struct symbol));
     if(symbol == NULL){
-        return;
+        return symbol;
     }
     symbol->address = 0;
     strcpy(symbol->symName,"\0");
     symbol->is_symbol_define = FALSE;
     symbol->num_line_defined = -1;
+    return symbol;
 }
 
 struct symbol * does_symbol_exist(struct vector * symbol_vector, char * name){
@@ -54,12 +56,12 @@ struct symbol * does_symbol_exist(struct vector * symbol_vector, char * name){
             printf("comparing: %s to %s in symbol_vector\n", name, symbol_pointer->symName);
             /*if the symbol name matches the provided name*/
             if(strcmp(symbol_pointer->symName, name) == 0){
-                printf("********* Symbol found in does_symbol_exist: %s\n", name);
+                printf("********* Symbol found in symbol list: %s\n", name);
                 return symbol_pointer;
             }
         } 
     }
-    printf("********* Symbol not found in does_symbol_exist: %s\n", name);
+    printf("********* Symbol not found in symbol list: %s\n", name);
     return NULL;
 }
 
@@ -99,14 +101,19 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
     void *const *end;
     char *string1,c;
 
-    struct symbol *symbol;
+    struct symbol *symbol = NULL;
        
 
     printf("entering while loop in first pass\n");
     while ((c = fgetc(amFile)) != EOF) {
-        symbol = (struct symbol *) malloc(sizeof(struct symbol)); 
-        init_symbol(symbol);
-
+        
+        symbol = init_symbol(symbol);
+        if (symbol == NULL) {
+            printf("********* Memory allocation error\n");
+            free_translation_unit(translation_unit);
+            exit(1);
+        }
+        
         ast = NULL;
 
         printf("\n\n\n\n********* processing line number: %d\n",line_counter);
@@ -115,19 +122,14 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         line = read_line_input(c,amFile);/*read line from file*/
         ast = ast_line(line);/*get the ast struct for each line*/
 
-        /*check if ast found errors, if so print them and move to the next line*/
-        if (ast->errors[0] != '\0') {
-            printf("********* error: syntax error in file: %s line: %d, %s\n", amFileName, line_counter, ast->errors);
+        /*if AST found errors, print them and move to the next line*/
+        /*Or if the line is empty, move on to the next line*/
+        if (ast->errors[0] != '\0' || ast->typeofLine == empty) {
+            if(ast->errors[0] != '\0'){
+                printf("********* error: syntax error in file: %s line: %d, %s\n", amFileName, line_counter, ast->errors);
+                is_error = TRUE;
+            }
             line_counter++;
-            is_error = TRUE;
-            free_ast(ast);
-            free(symbol);
-            free(line);
-            continue;
-
-        }/*check if line is empty, if so move on*/
-        else if(ast->typeofLine == empty){
-            /* line_counter++; */
             free_ast(ast);
             free(symbol);
             free(line);
@@ -154,17 +156,11 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                     translation_unit->entry_use = TRUE;
                 } else {/*if symbol all ready exists and not of type entry then it has to be a redefinition error*/
                     printf("********* symbol found but not of .entry type\n");
-                    printf("********* Semantic error in file: %s line: %d, redefinition of symbol\n", amFileName, line_counter);
+                    printf("********* Error error in file: %s line: %d, redefinition of symbol %s\n", amFileName, line_counter, find_symbol->symName);
                     is_error = TRUE;
                 }
             }else{/*if symbol doesn't all ready exist, we will add it to symbol vector*/
-                if (symbol == NULL) {
-                    printf("********* Memory allocation error\n");
-                    free_ast(ast);
-                    free(line);
-                    exit(1);
-                }
-
+               
                 printf("adding symbol: %s", symbol->symName);
 
                 strcpy(symbol->symName, ast->label_of_line);
@@ -180,14 +176,16 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         }
 
         /*if line is of instruction type*/
+        /*memory word - a cell of size 14 bits */
         if(ast->typeofLine == inst) {
-                /*we will update ic accordingly depending on the line*/
+                /*each instruction counts as a memory word*/
                 ic++;
+                /*both instruction operands are registers, then there's another memory word for the registers*/
                 if(ast->operands.inst_ops[0].reg_num != -1 && ast->operands.inst_ops[1].reg_num != -1){
                     ic++;
                 }
                 else{
-                    /*if one */
+                    
                     for(i = 0; i<2;i++){
                         if(ast->operands.inst_ops[i].reg_num != -1){
                             ic++;
@@ -204,7 +202,8 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                     }
                 }
                 /*else, if line is of type directive, we will update dc accordingly */
-        }else if(ast->typeofLine == dir && (ast->operation_code.dir_code == dir_data || ast->operation_code.dir_code == dir_string )) {
+        }
+        else if(ast->typeofLine == dir && (ast->operation_code.dir_code == dir_data || ast->operation_code.dir_code == dir_string )) {
             if(ast->operands.dir_ops.data_dir->type_data == int_data || ast->operands.dir_ops.data_dir->type_data == label_data){
                 dc += ast->operands.dir_ops.num_count;
             }
@@ -219,7 +218,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             find_symbol = does_symbol_exist(translation_unit->symbols, ast->operands.dir_ops.data_dir->data_option.label);
             if ((find_symbol != NULL) && (ast->operation_code.dir_code == dir_entry)) {
                 /*if symbol found update symbol type if symbol wasn't all ready defined as extern or entry*/
-                if (find_symbol->symType == dataSymbol) {
+                if (find_symbol->symType == dataSymbol && find_symbol->is_symbol_define == FALSE) {
                     printf("changing to entry data symbol");
                     find_symbol->symType = entryDataSymbol;
                     translation_unit -> entry_use = TRUE;
@@ -250,12 +249,11 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             find_symbol = does_symbol_exist(translation_unit->symbols,  ast->operands.dir_ops.data_dir[0].data_option.label);
             if(find_symbol){
                 /*is symbol all ready exists then it has to be a redefinition error*/
-                printf("error, symbol already defined\n");
+                printf("********* Semantic error in file: %s line: %d, symbol %s was already defined and can't be used as a variable name\n", amFileName, line_counter, find_symbol->symName);
             }
             /*else, wee will add symbol to symbols vector*/
             else{
                 strcpy(symbol->symName, ast->operands.dir_ops.data_dir[0].data_option.label);
-                /* symbol->symType = ast->operation_code.dir_code; */
                 symbol->symType = dataSymbol;
                 symbol->address = ast->operands.dir_ops.data_dir[1].data_option.num;
                 symbol->is_symbol_define = TRUE;
@@ -297,11 +295,8 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
     line_counter = 1;
     /*iterate through the file again*/
     while ((c = fgetc(amFile)) != EOF) {
-        symbol = (struct symbol *) malloc(sizeof(struct symbol)); 
-        symbol->address =0;
+        
         ast = NULL;
-
-        strcpy(symbol->symName,"\0");
 
         line = read_line_input(c,amFile);
         ast = ast_line(line); /*get the ast*/
@@ -312,7 +307,6 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             line_counter++;
             free_ast(ast);
             free(line);
-            free(symbol);
             continue;
         }
         
@@ -367,8 +361,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         }
         line_counter++;
         free_ast(ast); /*free ast*/
-        free(symbol);       /*free symbol*/
-        free(line);         /*free line*/
+        free(line);    /*free line*/
         line = NULL;
     }
 
@@ -417,9 +410,17 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
             /*check for errors*/
             if(ast->operands.inst_ops[1].address_of_op == label){
                 find_symbol = does_symbol_exist(translation_unit->symbols, ast->operands.inst_ops[1].data_inst.data_option.label);
-                if(find_symbol->is_symbol_define == TRUE){
+                if(!find_symbol){
+                    printf("********* error in file: %s line: %d, symbol found but was never defined: %s\n", amFileName, line_counter, ast->operands.inst_ops[1].data_inst.data_option.label);
+                    is_error = TRUE;
+                    free_ast(ast);
+                    free(line);
+                    line_counter++;
+                    continue;
+                }
+                else if(find_symbol->is_symbol_define == TRUE){
                     if(ast->operation_code.inst_code != op_cmp && ast->operation_code.inst_code != op_prn){ 
-                        printf("********* error in file: %s line: %d, second operand can not be of type define: %s\n", amFileName, line_counter, find_symbol->symName);
+                        printf("********* error in file: %s line: %d, second operand can not be a label which is defined as a number (via define): %s\n", amFileName, line_counter, find_symbol->symName);
                         is_error = TRUE;
                         free_ast(ast);
                         free(line);
@@ -439,7 +440,15 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
             }
             if(ast->operands.inst_ops[0].address_of_op == label){
                 find_symbol = does_symbol_exist(translation_unit->symbols, ast->operands.inst_ops[0].data_inst.data_option.label);
-                if(find_symbol->is_symbol_define == TRUE){
+                if(!find_symbol){
+                    printf("********* error in file: %s line: %d, symbol found but was never defined: %s\n", amFileName, line_counter, ast->operands.inst_ops[1].data_inst.data_option.label);
+                    is_error = TRUE;
+                    free_ast(ast);
+                    free(line);
+                    line_counter++;
+                    continue;
+                }
+                else if(find_symbol->is_symbol_define == TRUE){
                     if(ast->operation_code.inst_code == op_lea){ 
                         printf("********* error in file: %s line: %d, first operand in lea can not be of type define: %s\n", amFileName, line_counter, find_symbol->symName);
                         is_error = TRUE;
