@@ -7,13 +7,6 @@
 /******************************Auxiliary structures***********************************/
 /*************************************************************************************/
 
-/*structure to save the number of allowed arguments for
-each instruction operation*/
-typedef struct op_args {
-    char *opcode;    /* The legal operation code for the instructions */
-    int arg_num;     /* The number of arguments permitted for the operation */
-} op_code_args;
-
 /*Structure to contain the information of the expression label[val]
 with the val variable - being an offset - could be either a label
 or an integer (legal integer that the assembler handles)*/
@@ -35,20 +28,17 @@ typedef struct offset{
 typedef enum address_0_type{
     num, /* the operand is a constant number */
     label_0, /* the operand is a label */
-    label_offset_0, /* the operand is a label with an offset */
     none_0 /* if the type represents nothing - meaning something failed*/
 } address_0_type;
 
 /*this structure saves all three possible options for a constant number 
 being either 1 - an integer
-2 - a label defined elsewhere as an integer
-3 - an integer defined by and offset of a data array defined elsewhere*/
+2 - a label defined elsewhere as an integer*/
 typedef struct address_0_op{
     address_0_type type;
     union{
         int num; /* just a number */
         char *label; /* a label of the number - defined with .define directive*/
-        offset label_offset; /* a label with an offset - defined with .data directive*/
     }option;
 }address_0_op;
 
@@ -121,14 +111,14 @@ typedef enum dir{
 
 /* the options for the operands of the directives */
 typedef struct dir_op{
-    data data_dir[2*MAX_LINE_LEN]; /* the data of the directive */
+    data data_dir[DIR_DATA_SIZE]; /* the data of the directive */
     int num_count; /* the amount of operands */
 } dir_operands;
 
 /* The structure of the AST itself */
 typedef struct ast_structure{
-    char errors[INIT_ERROR_LEN]; /*NULL if no errors are found*/
-    char label[MAX_LABEL_LEN + 1]; /*the label of the entire line*/
+    char errors[ERROR_LEN]; /*NULL if no errors are found*/
+    char label_of_line[MAX_LABEL_LEN + 1]; /*the label of the entire line*/
     line_type typeofLine; /*either instruction or directive*/
 
     union{ /*the operation code of either instruction or directive*/
@@ -148,7 +138,7 @@ typedef struct ast_structure{
 /*************************************************************************************/
 
 /*************************************************************************************/
-/*******************************AST Functions*****************************************/
+/****************************AST Primary Functions************************************/
 /*************************************************************************************/
 
 /**
@@ -174,17 +164,7 @@ void init_ast(ast_tree *ast);
  */
 void free_ast(ast_tree *ast);
 
-/**
- * @brief This functions checks if the label at the beginning of the line is legal.
- * A legal label is defined as a string that starts with a letter and is followed by letters and digits only.
- * If the label is legal, it is returned by the function.
- * 
- * @param ast The AST of the line
- * @param line The line of assembly code
- * @param arg Flag that indicates whether the label an argument or it is a label of a line. 1 if it is an argument, 0 otherwise.
- * @return char* The label if it is legal, NULL otherwise.
- */
-char *check_legal_label(ast_tree *ast, char *str,int arg);
+
 
 /**
  * @brief This function checks whether the line is a directive line, and if it is, it processes the directive in it.
@@ -194,6 +174,42 @@ char *check_legal_label(ast_tree *ast, char *str,int arg);
  * @return int 1 if the directive is legal, 0 otherwise.
  */
 int check_directive(ast_tree *ast, char *line);
+
+/**
+ * @brief This function checks the legallity operands of the entry/extern directive. 
+ * 
+ * @param ast the AST structure of the assembley code line into which the directive will be processed.
+ * @param line the line of assembly code to be processed. 
+ * @return int 1 if the directive is legal, 0 otherwise.
+ */
+int check_entry_extern(ast_tree *ast, char *line);
+
+/**
+ * @brief This function checks the legallity for the operands of the .data directive. 
+ * 
+ * @param ast the AST structure of the assembley code line into which the directive will be processed.
+ * @param line the line of assembly code to be processed.
+ * @return int 1 if the directive is legal, 0 otherwise.
+ */
+int check_data_dir(ast_tree *ast, char *line);
+
+/**
+ * @brief This function checks the legallity for the operands of the .string directive. 
+ * 
+ * @param ast the AST structure of the assembley code line into which the directive will be processed.
+ * @param line the line of assembly code to be processed. 
+ * @return int 1 if the directive is legal, 0 otherwise.
+ */
+int check_string(ast_tree *ast, char *line);
+
+/**
+ * @brief This function checks the legallity for the operands of the .define directive. 
+ * 
+ * @param ast the AST structure of the assembley code line into which the directive will be processed.
+ * @param line the line of assembly code to be processed. 
+ * @return int 1 if the directive is legal, 0 otherwise.
+ */
+int check_define(ast_tree *ast, char *line);
 
 /**
  * @brief This function checks whether the line is an instruction line, 
@@ -206,20 +222,27 @@ int check_directive(ast_tree *ast, char *line);
 int check_instruction(ast_tree *ast, char *line);
 
 /**
- * @brief this function checks whether a string is empty or not.+
+ * @brief This function checks the legallity for the operands of the instruction. 
  * 
- * @param str the string to be checked.
- * @return An integer. 1 if the string is empty. 0 otherwise.
+ * @param ast the AST structure of the assembley code line into which the directive will be processed.
+ * @param line the line of assembly code to be processed. 
+ * @param opcodeNum the number of the instruction in the array of the operations for instructions.
+ * @return int 1 if the directive is legal, 0 otherwise.
  */
-int isEmptyString(char* str);
+int check_inst_operands(ast_tree *ast, char *line,int opcodeNum);
 
 /**
- * @brief This function trims the white spaces from the beginning and the end of the string, but not the middle of it (where are other characters).
+ * @brief This functions checks if the label at the beginning of the line is legal.
+ * A legal label is defined as a string that starts with a letter and is followed by letters and digits only.
+ * If the label is legal, it is returned by the function.
  * 
- * @param str the string to be trimmed
- * @return char* the trimmed string
+ * @param ast The AST of the line
+ * @param line The line of assembly code
+ * @param arg Flag that indicates whether the label an argument or it is a label of a line. 1 if it is an argument, 0 otherwise.
+ * @return char* The label if it is legal, NULL otherwise.
  */
-char* trimStartEnd(char* str);
+char *check_legal_label(ast_tree *ast, char *str,int arg);
+
 
 /**
  * @brief This function tokenizes the string according to the delimiters and returns the next token. 
@@ -232,38 +255,6 @@ char* trimStartEnd(char* str);
  */
 char* my_strtok(char *str, const char *delim,char **saveptr);
 
-/**
- * @brief This function checks if the string is a register among 
- * the registers of the fictional machine of the assembler.
- * the check is done by comparing the string to the names of the registers.
- * if a match is found, the function returns the number of the register.
- * 
- * @param str the string to be checked
- * @return int the number of the register (from 0 to 7), -1 otherwise
- */
-int is_reg(char* str);
-
-/**
- * @brief This function checks if the string is an instruction among 
- * the instructions of the fictional machine of the assembler.
- * the check is done by comparing the string to the names of the instructions.
- * if a match is found, the function returns the number of the instruction (index in the op_codes array).
- * 
- * @param str the string to be checked
- * @return an integer \n int the number of the instruction (from 0 to 15), -1 if a match was not found, -2 if the received string is null.
- */
-int is_inst(char* str);
-
-/**
- * @brief This function checks if the string is a directive among 
- * the directives of the fictional machine of the assembler.
- * the check is done by comparing the string to the names of the directives.
- * if a match is found, the function returns the of the directive in the dir_list array.
- * 
- * @param str the string to be checked
- * @return integer, the index of directive in the dir_list array, -1 if a match was not found, -2 if the received string is null.
- */
-int is_dir(char* str);
 
 /**
  * @brief checks if any occurrence of a directive (data , string , etc..) is found in the string.
@@ -319,51 +310,7 @@ offset *check_label_offset(ast_tree *ast, char *str);
  */
 void assign_ast_dir_inst(ast_tree *ast,line_type type,int i);
 
-/**
- * @brief This function checks the legallity operands of the entry/extern directive. 
- * 
- * @param ast the AST structure of the assembley code line into which the directive will be processed.
- * @param line the line of assembly code to be processed. 
- * @return int 1 if the directive is legal, 0 otherwise.
- */
-int check_entry_extern(ast_tree *ast, char *line);
 
-/**
- * @brief This function checks the legallity for the operands of the .data directive. 
- * 
- * @param ast the AST structure of the assembley code line into which the directive will be processed.
- * @param line the line of assembly code to be processed.
- * @return int 1 if the directive is legal, 0 otherwise.
- */
-int check_data_dir(ast_tree *ast, char *line);
-
-/**
- * @brief This function checks the legallity for the operands of the .string directive. 
- * 
- * @param ast the AST structure of the assembley code line into which the directive will be processed.
- * @param line the line of assembly code to be processed. 
- * @return int 1 if the directive is legal, 0 otherwise.
- */
-int check_string(ast_tree *ast, char *line);
-
-/**
- * @brief This function checks the legallity for the operands of the .define directive. 
- * 
- * @param ast the AST structure of the assembley code line into which the directive will be processed.
- * @param line the line of assembly code to be processed. 
- * @return int 1 if the directive is legal, 0 otherwise.
- */
-int check_define(ast_tree *ast, char *line);
-
-/**
- * @brief This function checks the legallity for the operands of the instruction. 
- * 
- * @param ast the AST structure of the assembley code line into which the directive will be processed.
- * @param line the line of assembly code to be processed. 
- * @param opcodeNum the number of the instruction in the array of the operations for instructions.
- * @return int 1 if the directive is legal, 0 otherwise.
- */
-int check_inst_operands(ast_tree *ast, char *line,int opcodeNum);
 
 /**
  * @brief this function checks whether the recieved string is in the format of
@@ -404,7 +351,7 @@ void print_ast(ast_tree *ast,const char *line);
 
 /*this function creates a char** pointer via memory allocation
  * for the my_strtok function.*/
-char **create_saveptr(char **saveptr);
+char **create_saveptr(char **saveptr, char movptr[]);
 
 /*like strcpy but with dynamic allocation of space in dest*/
 char *copystr_calloc(ast_tree *ast, char* dest, const char *src);
