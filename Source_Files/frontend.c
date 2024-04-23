@@ -27,7 +27,7 @@ char *dir_list[] = {"entry" , "extern" , "data" , "string" , "define"};
 ast_tree *ast_line(char* line){
 
     ast_tree *ast; 
-    char *copy_line,*char_skip,*label;
+    char *char_skip,*label;
     int check_dir,check_inst,check_empty,check_semicolon;
     int mid_newline;
 
@@ -45,35 +45,23 @@ ast_tree *ast_line(char* line){
     if(strlen(line) > MAX_LINE_LEN){
         strcpy(ast->errors, "Assembly line too long - maximal length is 82 characters\n");
         ast->typeofLine = error;
-        print_ast(ast,line);
         return ast;
     }
 
-    /*creating a copy of the line for printing purposes or for removing newline characters*/
-    copy_line = (char*) calloc(strlen(line) + 1, sizeof(char));
-    if(copy_line == NULL){
-        strcpy(ast->errors, "Error: Memory allocation failed for copy of the assembly line string\n");
-        ast->typeofLine = error;
-        return ast;
-    }
     
     /* removing the newline character from the end of the line*/ 
     if(line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
     
-    strcpy(copy_line,line);
 
     /* a case where a newline character is somewhere in the middle - cutting the line off*/
     mid_newline = check_mid_newline(line);
     if(strchr(line, '\n') && line[strlen(line) - 1] != '\n'&& mid_newline){
         strcpy(ast->errors, "a newline character appears in the middle of the line\n");
         ast->typeofLine = error;
-        print_ast(ast,copy_line);
-        free(copy_line);
         return ast;
     }
     if(!mid_newline && FOUND_ALLOC_ERROR){
         ast->typeofLine = error;
-        free(copy_line);
         return ast;
     }
     
@@ -84,8 +72,6 @@ ast_tree *ast_line(char* line){
     if(check_semicolon == -1 || check_empty){
         if(check_empty) ast->errors[0] = '\0';
         ast->typeofLine = empty;
-        print_ast(ast,copy_line);
-        free(copy_line);
         return ast;
     }
 
@@ -100,8 +86,6 @@ ast_tree *ast_line(char* line){
             if(ast->errors[0] == '\0') strcpy(ast->errors, "Illegal declaration of label\n");
             ast->typeofLine = error;
             ast->label_of_line[0] = '\0';
-            print_ast(ast,copy_line);
-            free(copy_line);
             return ast;
         }
         else strcpy(ast->label_of_line, label);
@@ -116,9 +100,7 @@ ast_tree *ast_line(char* line){
         check_dir = check_directive(ast, line); /*checking legallity of directive*/
         if(!check_dir){
             ast->typeofLine = error;
-            print_ast(ast,copy_line);
             if(label) free(label);
-            free(copy_line);
             return ast;
         }
     }
@@ -128,9 +110,7 @@ ast_tree *ast_line(char* line){
         check_inst = check_instruction(ast, line);
         if(!check_inst){
             ast->typeofLine = error;
-            print_ast(ast,copy_line);
             if(label) free(label);
-            free(copy_line);
             return ast;
         }
     }
@@ -138,11 +118,7 @@ ast_tree *ast_line(char* line){
     /*If we encountered no errors - then set the ast.errors field to NULL*/
     if(ast->typeofLine != error || isEmptyString(ast->errors)) ast->errors[0] = '\0';
 
-    /*print ast for debug*/
-    print_ast(ast,copy_line);
-
     if(label) free(label);
-    free(copy_line);
 
     return ast;
 }
@@ -287,7 +263,7 @@ int check_directive(ast_tree *ast, char *line){
     }
 
     /*initializing offset values for all the arguments*/
-    for(j = 0; j < 2*MAX_LINE_LEN; j++){
+    for(j = 0; j < DIR_DATA_SIZE; j++){
         DIR_OP_DATA(ast,j).offset.label = NULL;
         DIR_OP_DATA(ast,j).offset.num = -1;
     }
