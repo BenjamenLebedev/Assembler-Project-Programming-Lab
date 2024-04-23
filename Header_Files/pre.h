@@ -1,5 +1,7 @@
-#define MAX_LINE_LENGTH 81
+#ifndef PRE_H
+#define PRE_H
 
+#include "global_var.h"
 
 /**
  * @brief a structure representing a node of the list of deferent macros
@@ -7,7 +9,7 @@
  * 
  */
 struct macro_information {
-    char line[MAX_LINE_LENGTH];  
+    char *line;  
     struct macro_information* next;
 };
 
@@ -17,17 +19,17 @@ struct macro_information {
  * 
  */
 struct macro {
-    char name[MAX_LINE_LENGTH ];  
+    char *name;
     struct macro_information* info_head;   /* pointer to Head of the macro information linked list */
     struct macro* next;   /* Pointer to the next macro */
 };
 
 /*
- *         macro_definition: the line contains a macro definition.
- *         end_macro_definition: the line contains an end of macro definition.
- *         in_macro_definition: the line is within a macro definition.
- *         macro_call: the line contains a macro call.
- *         regular_line: the line does not fall into any of the above categories.
+ *  macro_definition: the line contains a macro definition.
+ *  end_macro_definition: the line contains an end of macro definition.
+ *  in_macro_definition: the line is within a macro definition.
+ *  macro_call: the line contains a macro call.
+ *  regular_line: the line does not fall into any of the above categories.
  */
 enum {
     macro_definition,
@@ -51,7 +53,7 @@ void addMacroInformation(struct macro* m, const char* line);
  * @param macros pointer to the start of the macro list
  * @param name the name of the new macro
  */
-void addMacro(struct macro** macros, const char* name);
+void addMacro(struct macro** macros, const char* name, int * is_error);
 
 void displayMacro_information(const struct macro* macro);
 void displayMacros(const struct macro* macros);
@@ -71,13 +73,6 @@ void freeMacro_information(struct macro_information* info);
  */
 void free_Macros(struct macro* macros);
 
-/**
- * @brief function to remove spaces from string
- * 
- * @param str pointer to a string we want to edit
- * @return char* pointer to the trimmed string
- */
-char *trimSpaces(char *str);
 
 /**
  * @brief returns a pointer to the last macro in the macro list
@@ -103,14 +98,15 @@ struct macro *is_string_macro(char *string, struct macro** original_macros);
  * @param line a pointer to a string that is the line of text we want to classify
  * @param macros a pointer to our list of macros
  * @param macro a pointer for a specific macro list
+ * @param is_error 
  * @return int representing the classification of the line
- *         macro_definition: the line contains a macro definition.
- *         end_macro_definition: the line contains an end of macro definition.
+ *         macro_definition: the line contains a macro definition signal.
+ *         end_macro_definition: the line contains an end of macro definition signal.
  *         in_macro_definition: the line is within a macro definition.
- *         macro_call: the line contains a macro call.
+ *         macro_call: the line contains a call for a macro.
  *         regular_line: the line does not fall into any of the above categories.
  */
-int macro_line_classifier(char *line, struct macro** macros, struct macro** macro);
+int macro_line_classifier(char * line, struct macro** macros, struct macro** macro, int * is_error);
 /**
  * @brief the main function for the preprocessor process 
  * 
@@ -118,3 +114,5 @@ int macro_line_classifier(char *line, struct macro** macros, struct macro** macr
  * @return char* a pointer to a string holding the file name with the ".am" end
  */
 char *preprocessor(char *name);
+
+#endif
