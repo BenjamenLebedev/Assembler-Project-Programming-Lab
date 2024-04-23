@@ -13,7 +13,6 @@ struct translation_unit *create_translation_unit() {
     }
     if (unit != NULL) { /*check if memory allocation succeeded*/
         /*initialize values*/
-        
         unit->IC = 0; 
         unit->DC = 0;
         unit->code_image = NULL;
