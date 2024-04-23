@@ -5,8 +5,6 @@
 #include "global_var.h" 
 #include "t_unit.h"
 
-#define CHUNK_READ 300
-
 typedef enum symType{ 
         entrySymbol,
         externSymbol, 
@@ -16,9 +14,9 @@ typedef enum symType{
         entryDataSymbol 
 } symType; 
 
-struct symbol{      /* תווית *//* hello: , x: ...*/
-    int is_symbol_define;
-    int num_line_defined;
+struct symbol{      /* a label *//* hello: , x: ... or variable name like in define directive*/
+    int is_symbol_define; /*is the symbol part of .define symbol = num*/
+    int num_line_defined; /*the line number of the .define directive*/
     char symName[MAX_LABEL_LEN];
     int address;
     symType symType;
@@ -30,14 +28,6 @@ struct ext{
     char ext_name[MAX_LABEL_LEN];
 };
 
-/**
- * @brief reads a line from the input file until a new line character is encountered or the end of the file is reached.
- * 
- * @param c the first character of the line. serves to check EOF is reached.
- * @param file the file from which we read the line.
- * @return char* string containing the line read from the input.
- */
-char* read_line_input(char c,FILE* file);
 
 /**
  * @brief constructor function for a symbol struct
@@ -68,6 +58,9 @@ void *extern_ctor(const void *copy);
  * @param item Pointer to the extern structure to be destroyed
  */
 void extern_dtor(void *item);
+
+
+struct symbol * init_symbol(struct symbol *symbol);
 
 /**
  * @brief checks if a symbol exists in the symbol vector
