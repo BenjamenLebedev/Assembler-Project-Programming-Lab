@@ -8,9 +8,9 @@
             "name": "project debug - input file name",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/mid",
+            "program": "${workspaceFolder}/assembler",
             "args": [
-                "psNEW"
+                "largeTest"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -35,7 +35,7 @@
             "name": "debug with input file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/mid",
+            "program": "${workspaceFolder}/assembler",
             "args": [
                 "psNEW.as"
             ],
@@ -62,7 +62,7 @@
             "name": "standard debug - no args",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/mid",
+            "program": "${workspaceFolder}/assembler",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
