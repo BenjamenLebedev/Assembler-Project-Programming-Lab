@@ -14,6 +14,16 @@ enum {
     TRUE
 };
 
+/*structure to save the number of allowed arguments for
+each instruction operation*/
+typedef struct op_args {
+    char *opcode;    /* The legal operation code for the instructions */
+    int arg_num;     /* The number of arguments permitted for the operation */
+} op_code_args;
+
+extern op_code_args op_codes[16];
+extern char *dir_list[5];
+
 /* Maximal length for a single line of command*/
 #define MAX_LINE_LEN 82
 
@@ -38,6 +48,12 @@ enum {
 /*The starting value of the instruction counter*/
 #define IC_START 100
 
+/*the amount of characters read from input with each realloc*/
+#define CHUNK_READ 300
+
+/*all the */
+#define SPACES  " \t\v\f"
+
 /* the maximal and minimal values of integer in the instructions for the fictional machine 
 in the instructions we have the first 2 bits reserved (A.R.E) so here we go with only 12 bits
 meaning 12-1 = 14-3 --> since we support negative integers we need the last bit for sign representation*/
@@ -53,5 +69,66 @@ in the directives we use all 14 bits for the integer so the values are like this
 37 numbers at most (single digit numbers) - since the line is confined to 82 characters (including newline character)*/
 #define MAX_OFFSET 36
 
+/**************************************************************************************/
+/****************Global functions - used by most of the source files*******************/
+/**************************************************************************************/
+
+
+char* read_line_input(char c,FILE* file);
+
+/**
+ * @brief This function trims the white spaces from the beginning and the end of the string, but not the middle of it (where are other characters).
+ * 
+ * @param str the string to be trimmed
+ * @return char* the trimmed string
+ */
+char* trimStartEnd(char* str);
+
+/**
+ * @brief This function checks if the string is a register among 
+ * the registers of the fictional machine of the assembler.
+ * the check is done by comparing the string to the names of the registers.
+ * if a match is found, the function returns the number of the register.
+ * 
+ * @param str the string to be checked
+ * @return int the number of the register (from 0 to 7), 
+ * -1 if a match was not found
+ * -2 if the received string is null.
+ */
+int is_reg(char* str);
+
+/**
+ * @brief This function checks if the string is an instruction among 
+ * the instructions of the fictional machine of the assembler.
+ * the check is done by comparing the string to the names of the instructions.
+ * if a match is found, the function returns the number of the instruction (index in the op_codes array).
+ * 
+ * @param str the string to be checked
+ * @return an integer \n int the number of the instruction (from 0 to 15), 
+ * -1 if a match was not found, 
+ * -2 if the received string is null.
+ */
+int is_inst(char* str);
+
+/**
+ * @brief This function checks if the string is a directive among 
+ * the directives of the fictional machine of the assembler.
+ * the check is done by comparing the string to the names of the directives.
+ * if a match is found, the function returns the of the directive in the dir_list array.
+ * 
+ * @param str the string to be checked
+ * @return integer, the index of directive in the dir_list array, 
+ * -1 if a match was not found, 
+ * -2 if the received string is null.
+ */
+int is_dir(char* str);
+
+/**
+ * @brief this function checks whether a string is empty or not.
+ * 
+ * @param str the string to be checked.
+ * @return An integer. 1 if the string is empty. 0 otherwise.
+ */
+int isEmptyString(char* str);
 
 #endif
