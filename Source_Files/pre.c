@@ -9,21 +9,41 @@
 
 
 
-/*checking to see if the name is a system reserved word
-which includes */
-int is_system_name(char name[MAX_LINE_LEN]) {
+/*checking to see if the name used for macro definition is legal
+a legal macro name starts with alphabetic letter and is followed
+by printable characters that are not spaces.
+also, system reserved words such as the instructions,directives and
+the registers names also can't be used as a name for a macro
+returns 1- TRUE if legal, 0 - FALSE otherwise*/
+int is_legal_macro_name(char *name) {
     
+    int i,len;
+
     /* checking if the recieved name is either:
     a register - one from r0,r1,....,r7
     the instructions - mov,add, etc....
     the directives - data,string,extern,entry,define*/
     if (is_reg(name) != -1 || is_dir(name) != -1 || is_inst(name) != -1) {
-        return TRUE;
+        return FALSE;
     }
     /*if the name is either the macro definition names - mcr,endmcr*/
-    if(strcmp(name, "mcr") == 0 || strcmp(name, "endmcr") == 0) return TRUE;
+    if(strcmp(name, "mcr") == 0 || strcmp(name, "endmcr") == 0) return FALSE;
+
     
-    return FALSE;
+
+    len = strlen(name);
+    for(i = 0; i < len; i++){
+        if(!isalpha(name[0])){
+            return FALSE;
+        }
+        if(!isprint(name[i]) || isspace(name[i])){
+            return FALSE;
+        }
+    }
+    
+    len = strlen(name);
+
+    return TRUE;
 }
 
 /*  Function to add a new line of information to a macro */
@@ -44,12 +64,11 @@ void addMacroInformation(struct macro* m, const char* line) {
         fprintf(stderr, "Memory allocation error\n");
         exit(EXIT_FAILURE);
     }
-
-    
     strncpy(info->line, line, line_len);
     info->line[line_len] = '\0';   /* null-termination */
+    
+    
     info->next = NULL;
-
      /* If the macro information list is empty, set the new info as the head */
     if (m->info_head == NULL) {
         m->info_head = info;
@@ -66,20 +85,35 @@ void addMacroInformation(struct macro* m, const char* line) {
 /*  Function to add a new macro to the macro list */
 void addMacro(struct macro** macros, const char* name, int * is_error) {
     struct macro* m = (struct macro*)malloc(sizeof(struct macro));
+    struct macro* current;
     size_t len;
+
     if (m == NULL) {
          /* Handle memory allocation error */
         fprintf(stderr, "Memory allocation error\n");
+        exit(EXIT_FAILURE);
     }
-
+    
     len = strlen(name);
+    if(len == 0){
+        fprintf(stderr, "Error: macro name is empty\n");
+        *is_error = TRUE;
+        return;
+    }
+    
+    m->name = (char*)malloc((len + 1)*sizeof(char));
+    if(m->name == NULL){
+        fprintf(stderr, "Memory allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+    
     if (len > 0 && name[len - 1] == '\n') {
         /* Remove the newline character if present at the end */
         strncpy(m->name, name, len - 1);
         m->name[len - 1] = '\0';
     } else {
-        strncpy(m->name, name, MAX_LINE_LEN - 1);
-        m->name[MAX_LINE_LEN - 1] = '\0';
+        strncpy(m->name, name, len);
+        m->name[len] = '\0';
     }
     m->info_head = NULL;
     m->next = NULL;
@@ -88,20 +122,21 @@ void addMacro(struct macro** macros, const char* name, int * is_error) {
     if (*macros == NULL) {
         *macros = m;
         printf("checking if name is protected\n");
-        if(is_system_name(m->name)){
-            printf("error: name used for macro is a system reserved name\n");
+        if(!is_legal_macro_name(m->name)){
+            printf("error: name %s used for macro not legal\n", m->name);
+            *is_error = TRUE;
         }
     } else {
         
          /* Otherwise, move on the list and append the new macro */
-        struct macro* current = *macros;
+        current = *macros;
         while (current->next != NULL) {
             current = current->next;
         }
         current->next = m;
         printf("checking if name is protected\n");
-        if(is_system_name(m->name)){
-            printf("error: name used for macro is a system reserved name\n");
+        if(!is_legal_macro_name(m->name)){
+            printf("error: name %s used for macro not legal\n", m->name);
             *is_error = TRUE;
         }
     }
@@ -145,14 +180,16 @@ void displayMacros(const struct macro* macros) {
 }
 
 void free_Macros(struct macro* macros) {
-    struct macro* next_macro = macros->next;
+    struct macro* next_macro;
     if(!macros){
         printf("macros is NULL in free_macros\n");
     }
+    next_macro = macros->next;
     /*irritates throw the list to free all the macros*/
     while (macros != NULL) {
         next_macro = macros->next;
         freeMacro_information(macros->info_head);
+        free(macros->name);
         free(macros);
         macros = next_macro;
     }
