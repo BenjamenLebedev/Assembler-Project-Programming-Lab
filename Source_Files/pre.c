@@ -33,10 +33,7 @@ int is_legal_macro_name(char *name) {
 
     len = strlen(name);
     for(i = 0; i < len; i++){
-        if(!isalpha(name[0])){
-            return FALSE;
-        }
-        if(!isprint(name[i]) || isspace(name[i])){
+        if(!isalpha(name[0]) || !isprint(name[i]) || isspace(name[i])){
             return FALSE;
         }
     }
@@ -273,7 +270,7 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
     token = trimStartEnd(token);/*first token of line without spaces */
     printf("token: %s\n", token);
     if(strcmp(token, "mcr") == 0){
-        token = strtok(NULL, " "); /*name of macro*/
+        token = strtok(NULL, SPACES); /*name of macro*/
         printf("in macro_definition, token: %s\n", token);
         if (token) {
             addMacro(macros, token, is_error); /*create macro struct with the name of the macro */
