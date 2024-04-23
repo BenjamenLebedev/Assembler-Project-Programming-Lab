@@ -772,38 +772,11 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
                     if(check_label) free(check_label);
                     if(check_offset) free_offset_struct(check_offset);
                     free_op_address_0(operand_type_0);
+                    FREE_SAVEPTR(saveptr,movptr)
                     return 0;
                 } 
                 
                 index++;
-            }
-            /*an integer represented by label[offset] - a number reference by an
-            offset of another data set*/
-            else if(operand_type_0->type == label_offset_0){
-                INST_OP_DATA(ast,index).type_data = label_data;
-                
-                INST_OP_DATA(ast,index).data_option.label = \
-                copystr_calloc(ast,INST_OP_DATA(ast,index).data_option.label ,operand_type_0->option.label_offset.label_array);
-                if(!INST_OP_DATA(ast,index).data_option.label){
-                    if(check_label) free(check_label);
-                    if(check_offset) free_offset_struct(check_offset);
-                    free_op_address_0(operand_type_0);
-                    return 0;
-                } 
-                
-                if(operand_type_0->option.label_offset.offset_val.label){
-                    INST_OP_DATA(ast,index).offset.label = copystr_calloc(ast,INST_OP_DATA(ast,index).offset.label,operand_type_0->option.label_offset.offset_val.label);
-                    if(!INST_OP_DATA(ast,index).offset.label){
-                        if(check_label) free(check_label);
-                        if(check_offset) free_offset_struct(check_offset);
-                        free_op_address_0(operand_type_0);
-                        return 0;
-                    } 
-                    index++;
-                }
-                else if(operand_type_0->option.label_offset.offset_val.num >= 0){
-                    INST_OP_DATA(ast,index++).offset.num = operand_type_0->option.label_offset.offset_val.num;
-                }
             }
         }
         /*if the operand is a label - no offset*/
@@ -815,6 +788,7 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
                 free(check_label);
                 free_offset_struct(check_offset);
                 free_op_address_0(operand_type_0);
+                FREE_SAVEPTR(saveptr,movptr)
                 return 0;
             }
             index++;
@@ -830,6 +804,7 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
                 if(check_label) free(check_label);
                 free_offset_struct(check_offset);
                 free_op_address_0(operand_type_0);
+                FREE_SAVEPTR(saveptr,movptr)
                 return 0;
             }
 
@@ -839,6 +814,7 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
                     if(check_label) free(check_label);
                     free_offset_struct(check_offset);
                     free_op_address_0(operand_type_0);
+                    FREE_SAVEPTR(saveptr,movptr)
                     return 0;
                 }
                 index++;
@@ -877,6 +853,7 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
     /* if index is lower than 2 - we didn't scan enough operands*/
     if(op_codes[opcodeNum].arg_num == 2 && index < 2){
         strcpy(ast->errors, "Too few arguments for instruction\n");
+        FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
 
@@ -886,12 +863,14 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
         type_of_address = ast->operands.inst_ops[1].address_of_op;
         if(type_of_address == const_num){
             strcpy(ast->errors, "For operations mov,add,sub,lea the second operand cannot be a constant number\n");
+            FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
         if(opcodeNum == 6){
             type_of_address = ast->operands.inst_ops[0].address_of_op;
             if(type_of_address == const_num || type_of_address == reg){
                 strcpy(ast->errors, "For operation lea the first operand cannot be a constant number or a register\n");
+                FREE_SAVEPTR(saveptr,movptr)
                 return 0;
             }
         }
@@ -902,6 +881,7 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
         type_of_address = ast->operands.inst_ops[1].address_of_op;
         if(type_of_address == const_num){
             strcpy(ast->errors, "For operations not,clr,inc,dec,jmp,bne,red,jsr the operand cannot be a constant number\n");
+            FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
     }
@@ -909,6 +889,7 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
         type_of_address = ast->operands.inst_ops[1].address_of_op;
         if(type_of_address == label_offset){
             strcpy(ast->errors, "For operations jmp,bne,jsr the operand cannot be a label with an offset\n");
+            FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
     }
@@ -1069,29 +1050,6 @@ offset *check_label_offset(ast_tree *ast, char *str){
     return offset_var;
 }
 
-void free_aux_structs(address_0_op *operand_type_0,offset *offset_var,char *label){
-    if(label) free(label);
-    if(offset_var != NULL){
-        if(offset_var->label_array) free(offset_var->label_array);
-        if(offset_var->offset_val.label) free(offset_var->offset_val.label);
-        free(offset_var);
-    }
-    if(operand_type_0 != NULL){
-        if(operand_type_0->type == label_0)
-            free(operand_type_0->option.label);    
-        
-        if(operand_type_0->type == label_offset_0){
-            if(operand_type_0->option.label_offset.label_array) 
-                free(operand_type_0->option.label_offset.label_array);
-            if(operand_type_0->option.label_offset.offset_val.label)
-                free(operand_type_0->option.label_offset.offset_val.label);
-        }
-            
-        free(operand_type_0);
-    }  
-    
-}
-
 void free_offset_struct(offset *offset_var){
     if(offset_var->label_array) free(offset_var->label_array);
     if(offset_var->offset_val.label) free(offset_var->offset_val.label);
@@ -1100,14 +1058,7 @@ void free_offset_struct(offset *offset_var){
 
 void free_op_address_0(address_0_op *operand_type_0){
     if(operand_type_0->type == label_0)
-        free(operand_type_0->option.label);    
-    
-    else if(operand_type_0->type == label_offset_0){
-        if(operand_type_0->option.label_offset.label_array) 
-            free(operand_type_0->option.label_offset.label_array);
-        if(operand_type_0->option.label_offset.offset_val.label)
-            free(operand_type_0->option.label_offset.offset_val.label);
-    }
+        free(operand_type_0->option.label);
         
     free(operand_type_0);
 }
@@ -1116,9 +1067,7 @@ address_0_op *address_type_0(ast_tree *ast,char *str){
 
     address_0_op *result = NULL; /*the struct that contains all 3 options for const number operand*/
     char *check_label;
-    offset *check_offset = NULL;
     
-
     result = (address_0_op*) calloc(1,sizeof(address_0_op));
     if(!result){
         strcpy(ast->errors, "Memory allocation error\n");
@@ -1145,12 +1094,6 @@ address_0_op *address_type_0(ast_tree *ast,char *str){
         free(result);
         return NULL;
     }
-    check_offset = check_label_offset(ast,str);
-    if(check_offset == NULL){
-        if(check_label) free(check_label);
-        free(result);
-        return NULL;
-    }
 
     /*if the operand is an integer*/
     if(is_integer(str,inst)){ 
@@ -1163,50 +1106,18 @@ address_0_op *address_type_0(ast_tree *ast,char *str){
         result->option.label = copystr_calloc(ast,result->option.label , check_label);
         if(!result->option.label){
             free(check_label);
-            free_offset_struct(check_offset);
             free(result);
             return NULL;
-        }
-        
-    }
-    /*label with offset*/
-    else if(check_offset->label_array){
-        result->type = label_offset_0;
-        /*allocating the label of the array for the offset*/
-        result->option.label_offset.label_array = copystr_calloc(ast,result->option.label_offset.label_array , check_offset->label_array);
-        if(!result->option.label_offset.label_array){
-            if(check_label) free(check_label);
-            free_offset_struct(check_offset);
-            if(result->option.label) free(result->option.label);
-            free(result);
-            return NULL;
-        } 
-        /*if the offset value is a label, allocate memory for it*/
-        if(check_offset->offset_val.label){
-            result->option.label_offset.offset_val.label = copystr_calloc(ast,result->option.label_offset.offset_val.label , check_offset->offset_val.label);
-            if(!result->option.label_offset.offset_val.label){
-                free_offset_struct(check_offset);
-                if(check_label) free(check_label);
-                if(result->option.label) free(result->option.label);
-                free(result->option.label_offset.label_array);
-                free(result);
-                return NULL;
-            }
-        }
-        else if(check_offset->offset_val.num >= 0){
-            result->option.label_offset.offset_val.num = check_offset->offset_val.num;
         }
         
     } 
     else{ /*if the type is none of the 3 options*/
         result->type = none_0;
         if(check_label) free(check_label);
-        free_offset_struct(check_offset);
         return result;
     }
  
     if(check_label) free(check_label);
-    free_offset_struct(check_offset);
     return result;
 }
 
@@ -1331,14 +1242,19 @@ void assign_ast_dir_inst(ast_tree *ast,line_type type,int i){
 char *trimStartEnd(char* str){
     char *end;
     
+    if(!str || *str == '\0'){
+        return str;
+    } 
+
     /* trimming white spaces from the beggining */
     while (isspace(*str)) str++;
+    
     
     /* trimming white spaces from the end */
     end = str + strlen(str) - 1;
     while(end > str && isspace((unsigned char)*end)) end--;
 
-    end[1] = '\0';
+    *(end + 1) = '\0';
 
     return str;
 }
