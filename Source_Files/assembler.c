@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    for (i = 1; i < argc; i++){        
+    for (i = 1; i < argc; i++){
         
         printf("----------------------------------------------------------------------------------------------------- \n");
         printf("------------------------------  Assembling file: %s  started ---------------------------------------- \n", argv[i]);
@@ -110,6 +110,7 @@ int main(int argc, char *argv[]) {
                 printf("---------------------------------------------------------------------------------------------------- \n");
                 free(amFileName);
                 free_translation_unit(translation_unit);
+                continue;
             }
 
             fclose(amFile);
