@@ -33,10 +33,10 @@ void add_to_code_image(struct translation_unit *unit, int value) {
     /*dynamic allocation of memory*/
     if ((unit->IC % 10 +1) == 1) { /*if we to the 10th cell, increase the size by 10*/
         unit->code_image = (int *)realloc(unit->code_image, (unit->IC + 10) * sizeof(int));
-        printf("relocating memory in add_to_code_image func\n");
         if (unit->code_image == NULL) {
             printf("Error: Memory reallocation failed for code_image.\n");
-            return;
+            free_translation_unit(unit);
+            exit(1);
         }
     }
     unit->code_image[unit->IC] = value;
