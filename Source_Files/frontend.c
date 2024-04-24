@@ -34,7 +34,7 @@ ast_tree *ast_line(char* line){
     /* Allocate memory for the AST */
     ast = (ast_tree *) calloc(1, sizeof(ast_tree));
     if(ast == NULL){
-        fprintf(stderr, "Error: Memory allocation failed for the AST structure\n");
+        fprintf(stdout, "Error: Memory allocation failed for the AST structure\n");
         return ast;
     }
 
