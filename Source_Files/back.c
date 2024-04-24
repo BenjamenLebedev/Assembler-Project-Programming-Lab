@@ -76,7 +76,7 @@ void convertToSecretBase(int number, char secretBase[]) {
 /***********************functions to print object files*****************************/
 /***********************************************************************************/
 
-int make_ob_file(const struct translation_unit *translation_unit, char *FileName){
+int make_ob_file(struct translation_unit *translation_unit, char *FileName){
     int i,total;
     char secretBase[8];
     int is_error = FALSE;
@@ -87,22 +87,28 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
     char newline[2] = "\n";
 
     file_ob_name = (char *)malloc(strlen(FileName) + + strlen(ob_extension) + 1);
+    if(!file_ob_name){
+        printf("********* Memory allocation error\n");
+        free_translation_unit(translation_unit);
+        return is_error = TRUE;
+    }
     strcpy(file_ob_name, FileName);
     strcat(file_ob_name, ob_extension);
-    file_ob = fopen(file_ob_name, "w"); /*create file*/ 
+    file_ob = fopen(file_ob_name, "w"); /*create file*/
+    if(!file_ob){
+        printf("********* Error: cannot open file %s for writing\n", file_ob_name);
+    }
 
     if(file_ob){
         fprintf(file_ob, "  %d %d\n", translation_unit->IC, translation_unit->DC);
         /*first printing the code image*/
         for(total = i = 0; i<translation_unit->IC; i++, total++){
             convertToSecretBase(translation_unit->code_image[i], secretBase);
-            printf("IC %d: %s\n",i+100, secretBase);
             fprintf(file_ob, "0%d %s\n",total+100, secretBase);
         }
         /*now printing the data image*/
         for(i = 0; i<translation_unit->DC; i++, total++){
             convertToSecretBase(translation_unit->data_image[i], secretBase);
-            printf("DC: %s\n", secretBase);
             if(i == translation_unit->DC - 1) strcpy(newline, "");
             
             fprintf(file_ob, "0%d %s%s",total+100 ,secretBase,newline);
@@ -115,11 +121,10 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
     free(file_ob_name);
 
     return is_error;
-
 }
 
 
-int make_extern_file(const struct translation_unit *translation_unit, char *FileName){
+int make_extern_file(struct translation_unit *translation_unit, char *FileName){
 
     int i,is_error = FALSE;
     void *const *begin;
@@ -134,7 +139,7 @@ int make_extern_file(const struct translation_unit *translation_unit, char *File
     file_ext_name = (char *)malloc(strlen(FileName) + strlen(ext_extension) + 1);
     if(!file_ext_name){
         printf("********* Memory allocation error\n");
-        is_error = TRUE;
+        free_translation_unit(translation_unit);
     }
     strcpy(file_ext_name, FileName);
     strcat(file_ext_name, ext_extension);
@@ -150,11 +155,9 @@ int make_extern_file(const struct translation_unit *translation_unit, char *File
         }
     }
     if(file_ext){
-        printf("in extern if(file_ext) func\n");
         VECTOR_LOOP(begin, end, translation_unit->externals) {
             if (*begin) {
                 external = (struct ext *) *begin;
-                printf("********* extern: %s, count: %d\n", external->ext_name, external->address_count); 
 
                 for(i=0; i<external->address_count; i++){
                     fprintf(file_ext, "%s\t0%d\n", external->ext_name, external->address[i]);
@@ -183,14 +186,15 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
     file_ent_name = (char *)malloc(strlen(FileName) + strlen(ent_extension) + 1);
     if(!file_ent_name){
         printf("********* Memory allocation error\n");
-        is_error = TRUE;
+        free_translation_unit(translation_unit);
+        exit(1);
     }
     strcpy(file_ent_name, FileName);
     strcat(file_ent_name, ent_extension);
 
     /* creating file only if an entry symbol is used somewhere*/
     entrie = (struct symbol *) vector_begin(translation_unit->symbols);
-    if(entrie && translation_unit->entry_use == TRUE){
+    if(entrie && translation_unit->entry_use == TRUE && !is_error){
         file_ent = fopen(file_ent_name, "w"); /*create file*/
         if(!file_ent){
             printf("********* Error: cannot open file %s for writing\n", file_ent_name);
@@ -198,15 +202,21 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
         }
         /*sorting the symbol vector by increasing addresses*/
         /*vector_sort(translation_unit);*/
-        vector_sort_merge(translation_unit);
+        if(!is_error){
+            is_error = vector_sort_merge(translation_unit);
+            if(is_error){
+                printf("********* Error: memory allocation error during sorting of entry symbols vector\n");
+                free_translation_unit(translation_unit);
+                fclose(file_ent);
+                exit(1);
+            }
+        }
     }
-    if(file_ent){
-        printf("in extern if(file_ext) func\n");
+    if(file_ent && !is_error){
         VECTOR_LOOP(begin, end, translation_unit->symbols) {
             if (*begin) {
                 entrie = (struct symbol *) *begin;   
                 if(entrie->symType == entryDataSymbol || entrie->symType == entryCodeSymbol ){
-                    printf("********* entry: %s\n", entrie->symName); 
                     fprintf(file_ent, "%s\t0%d\n", entrie->symName, entrie->address);
                 }
             }
@@ -223,24 +233,39 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
 /**************functions for sorting the symbol(enrty) vector****************/
 /****************************************************************************/
 
-/*using merge sort*/
-void vector_sort_merge(struct translation_unit *translation_unit){
 
-    int vecSize = vector_length(translation_unit->symbols);
+int vector_sort_merge(struct translation_unit *translation_unit){
 
-    mergeSort((void **) vector_begin(translation_unit->symbols), vecSize);
+    int vecSize;
+    
+    int *is_error,x;
+    is_error = &x;
+    vecSize = vector_length(translation_unit->symbols);
+    *is_error = FALSE;
+    mergeSort((void **) vector_begin(translation_unit->symbols), vecSize,is_error);
+    
+    return *is_error;
 }
 
 
-void mergeSort(void **arr, int n){
+void mergeSort(void **arr, int n, int *is_error){
 
     int i,mid;
     void **l, **r;
+
+    if(*is_error == TRUE){
+        return;
+    }
 
     if(n < 2) return;
     mid = n/2;
     l = (void **) malloc(mid * sizeof(void *));
     r = (void **) malloc((n-mid) * sizeof(void *));
+    if(l == NULL || r == NULL){
+        printf("********* Memory allocation error\n");
+        *is_error = TRUE;
+        return;
+    }
 
     
     for(i = 0; i < mid; i++){
@@ -249,8 +274,15 @@ void mergeSort(void **arr, int n){
     for(i = mid; i < n; i++){
         r[i-mid] = arr[i];
     }
-    mergeSort(l, mid);
-    mergeSort(r, n-mid);
+    mergeSort(l, mid, is_error);
+    mergeSort(r, n-mid, is_error);
+    
+    if(*is_error == TRUE){
+        if(l) free(l);
+        if(r) free(r);
+        return;
+    }
+    
     merge(arr, l, mid, r, n-mid);
     free(l);
     free(r);
