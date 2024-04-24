@@ -17,13 +17,15 @@ typedef enum symType{
 struct symbol{      /* a label *//* hello: , x: ... or variable name like in define directive*/
     int is_symbol_define; /*is the symbol part of .define symbol = num*/
     int num_line_defined; /*the line number of the .define directive*/
+    int len_data; /*amount of elements in case it is a dataSymbol of data directive*/
+    int len_string; /* length of the string in case it is a dataSymbol of string directive*/
     char symName[MAX_LABEL_LEN];
     int address;
     symType symType;
 };  
 
 struct ext{
-    int address[1024];
+    int address[MEM_SIZE/4];
     int address_count;
     char ext_name[MAX_LABEL_LEN];
 };
