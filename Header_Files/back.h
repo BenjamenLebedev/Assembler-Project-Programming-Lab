@@ -24,7 +24,7 @@ void convertToSecretBase(int number, char secretBase[]);
  * @param FileName the file name, for creating the object file.
  * @return Returns TRUE if there was an error creating the file, otherwise FALSE.
  */
-int make_ob_file(const struct translation_unit *translation_unit, char *FileName);
+int make_ob_file(struct translation_unit *translation_unit, char *FileName);
 
 /**
  * @brief creates an extern file for a given translation unit.
@@ -35,7 +35,7 @@ int make_ob_file(const struct translation_unit *translation_unit, char *FileName
  * @param FileName the file name, for creating the external file.
  * @return returns TRUE if there was an error creating the file, otherwise FALSE.
  */
-int make_extern_file(const struct translation_unit *translation_unit, char *FileName);
+int make_extern_file(struct translation_unit *translation_unit, char *FileName);
 
 /**
  * @brief creates an entries file for the provided translation unit.
@@ -52,6 +52,17 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
 /**************functions for sorting the symbol(entry) vector****************/
 /****************************************************************************/
 
-void vector_sort_merge(struct translation_unit *translation_unit);
-void mergeSort(void **arr, int n);
+/**
+ * @brief sorts the symbols vector by the address of the symbols.
+ * 
+ * The function sorts the symbols vector by the address of the symbols in ascending order.
+ * 
+ * @param translation_unit the translation unit containing the symbols vector to be sorted.
+ * @return int returns TRUE if there was an error sorting the vector, otherwise FALSE.
+ */
+int vector_sort_merge(struct translation_unit *translation_unit);
+
+/*recursive merge sort*/
+void mergeSort(void **arr, int n, int *is_error);
+/*the merge itself - done by comparing the addresses of the entry symbols*/
 void merge(void **arr, void **l, int leftCount, void **r, int rightCount);
