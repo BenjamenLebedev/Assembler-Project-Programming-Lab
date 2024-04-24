@@ -24,6 +24,12 @@ typedef struct op_args {
 extern op_code_args op_codes[16];
 extern char *dir_list[5];
 
+/*The starting value of the instruction counter*/
+#define IC_START 100
+
+/*the amount of memory in the fictional machine*/
+#define MEM_SIZE 4096
+
 /* Maximal length for a single line of command*/
 #define MAX_LINE_LEN 82
 
@@ -46,10 +52,7 @@ extern char *dir_list[5];
 #define DIR_NUM 5
 
 /*the maximal number of arguments in the .data directive*/
-#define DIR_DATA_SIZE MAX_LINE_LEN/4
-
-/*The starting value of the instruction counter*/
-#define IC_START 100
+#define DIR_DATA_SIZE MAX_LINE_LEN/2
 
 /*the amount of characters read from input with each realloc*/
 #define CHUNK_READ 300
