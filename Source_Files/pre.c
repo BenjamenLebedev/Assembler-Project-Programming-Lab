@@ -51,14 +51,15 @@ void addMacroInformation(struct macro* m, const char* line) {
     struct macro_information* info = (struct macro_information*)malloc(sizeof(struct macro_information));
     if (info == NULL) {
         /*  Handle memory allocation error */
-        fprintf(stderr, "Memory allocation error\n");
+        fprintf(stdout, "Memory allocation error for macro structure\n");
         exit(EXIT_FAILURE);
     }
     line_len = strlen(line);
 
     info->line = (char*)malloc((line_len+1)*sizeof(char));
     if(info->line == NULL){
-        fprintf(stderr, "Memory allocation error\n");
+        fprintf(stderr, "Memory allocation error for line of input\n");
+        free(info);
         exit(EXIT_FAILURE);
     }
     strncpy(info->line, line, line_len);
@@ -81,26 +82,27 @@ void addMacroInformation(struct macro* m, const char* line) {
 
 /*  Function to add a new macro to the macro list */
 void addMacro(struct macro** macros, const char* name, int * is_error) {
-    struct macro* m = (struct macro*)malloc(sizeof(struct macro));
-    struct macro* current;
+    struct macro* m = NULL;
+    struct macro* current = NULL;
     size_t len;
 
+    m = (struct macro*)malloc(sizeof(struct macro));
     if (m == NULL) {
          /* Handle memory allocation error */
-        fprintf(stderr, "Memory allocation error\n");
+        fprintf(stdout, "Memory allocation error\n");
         exit(EXIT_FAILURE);
     }
     
     len = strlen(name);
     if(len == 0){
-        fprintf(stderr, "Error: macro name is empty\n");
+        fprintf(stdout, "Error: macro name is empty\n");
         *is_error = TRUE;
         return;
     }
     
     m->name = (char*)malloc((len + 1)*sizeof(char));
     if(m->name == NULL){
-        fprintf(stderr, "Memory allocation error\n");
+        fprintf(stdout, "Memory allocation error\n");
         exit(EXIT_FAILURE);
     }
     
@@ -118,7 +120,6 @@ void addMacro(struct macro** macros, const char* name, int * is_error) {
      /* If the macro list is empty, set the new macro as the head */
     if (*macros == NULL) {
         *macros = m;
-        printf("checking if name is protected\n");
         if(!is_legal_macro_name(m->name)){
             printf("error: name %s used for macro not legal\n", m->name);
             *is_error = TRUE;
@@ -131,7 +132,6 @@ void addMacro(struct macro** macros, const char* name, int * is_error) {
             current = current->next;
         }
         current->next = m;
-        printf("checking if name is protected\n");
         if(!is_legal_macro_name(m->name)){
             printf("error: name %s used for macro not legal\n", m->name);
             *is_error = TRUE;
@@ -196,7 +196,6 @@ void free_Macros(struct macro* macros) {
 struct macro * pointer_to_last_macro(struct macro** macros){
     struct macro* current = *macros;
     struct macro* nextMacro = current->next;
-    printf("in pointer_to_last_macro func\n");
     while(nextMacro){
         current = nextMacro;  
         nextMacro = nextMacro->next;
@@ -209,34 +208,17 @@ struct macro * pointer_to_last_macro(struct macro** macros){
 
  
 struct macro * is_string_macro(char * string, struct macro** original_macros){
-    int i;
-    struct macro* macros = *original_macros;
-    printf("in is_string_macro func/////\n");
-    printf("string: ");
-    for (i = 0; string[i] != '\0'; ++i) {
-        printf("%d ", string[i]);
-    }
-    printf("\n");
 
-    if(!macros){
-        printf("*macros is Null\n");
-    }
+    struct macro* macros = *original_macros;
 
     while(macros){
-        printf("macros->name: ");
-        for (i = 0; macros->name[i] != '\0'; ++i) {
-            printf("%d ", macros->name[i]);
-        }
-        printf("\n");
 
         if(strcmp(macros->name, string) == 0){
-            printf("is_string_macro returns macros\n");
             return macros;
         }
         macros = macros->next;
     }
 
-    printf("is_string_macro returns null\n");
     return NULL;
 }
 
@@ -245,15 +227,8 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
     char *line_copy;
     char *token;
     
-    if(!(*macros)){
-        printf("macros is null in macro_line_classifier*********\n");
-    }
-
-    printf("Processing line: %s\n", line);
 
     /* if it's an empty line - just treat it as a regular line*/
-    
-
     line_copy = (char *)malloc(strlen(line) + 1);
     if(!line_copy){
         printf("********* Memory allocation error\n");
@@ -268,19 +243,11 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
     
     token = strtok(line_copy, SPACES);
     token = trimStartEnd(token);/*first token of line without spaces */
-    printf("token: %s\n", token);
     if(strcmp(token, "mcr") == 0){
         token = strtok(NULL, SPACES); /*name of macro*/
-        printf("in macro_definition, token: %s\n", token);
         if (token) {
+
             addMacro(macros, token, is_error); /*create macro struct with the name of the macro */
-            printf("adding first macro *******************************************************************\n");
-            if(!macros){
-                printf("macros is null*********************\n");
-            }
-            else{
-                printf("macros is NOT null*********************\n");
-            }
             *macro = pointer_to_last_macro(macros);
             free(line_copy);
             return macro_definition;
@@ -288,19 +255,15 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
 
     }
     else if(strcmp(token, "endmcr") == 0){
-        printf("returning end_macro_definition-----------------------------------\n");
         free(line_copy);
         return end_macro_definition;
     }
     else if(*macro){
-        printf("adding %s to %s\n",line, (*macro)->name);
         addMacroInformation(*macro, line);
         free(line_copy);
         return in_macro_definition;
     }
     else if((wanted_macro = is_string_macro(token, macros))){
-        printf("in macro_call...............");
-        printf("wanted macro name:%s  \n", (wanted_macro)->name);
         *macro = wanted_macro;
         free(line_copy);
         return macro_call;
@@ -325,6 +288,7 @@ char* read_line_input(char c,FILE* file){
     inputLine = (char *) calloc(2, sizeof(char));
     if(!inputLine){
         printf("********* Memory allocation error\n");
+        return NULL;
     }
     strncpy(inputLine,&c,1); /*putting the character into the inputline*/
     len_input++;
@@ -337,6 +301,7 @@ char* read_line_input(char c,FILE* file){
         inputLine = (char *) realloc(inputLine, len_input+len_tmp+1); /*reallocating according to what we recieved*/
         if(!inputLine){
             printf("********* Memory allocation error\n");
+            return NULL;
         }
         strcpy(inputLine+len_input, str_tmp);
         len_input += len_tmp;
@@ -362,6 +327,10 @@ char * preprocessor(char * name){
     /*allocate memory and concentrate the strings to get their full name*/
     char *file_as_name = (char *)malloc(strlen(name) + strlen(as_extension) + 1); 
     char *file_am_name = (char *)malloc(strlen(name) + strlen(am_extension) + 1); 
+    if(!file_as_name || !file_am_name){
+        printf("********* Memory allocation error\n");
+        exit(EXIT_FAILURE);
+    }
     strcpy(file_as_name, name);
     strcpy(file_am_name, name);
     strcat(file_as_name, as_extension);
@@ -372,7 +341,9 @@ char * preprocessor(char * name){
 
     /*check that something didn't go wrong in the fopen func*/
     if(!file_as || !file_am){
-        fprintf(stderr, "Error opening files\n");
+        fprintf(stdout, "Error opening files - %s or %s\n",file_as_name, file_am_name);
+        free(file_as_name);
+        free(file_am_name);
         return NULL;
     }
 
@@ -385,7 +356,6 @@ char * preprocessor(char * name){
             case 1: /* in_macro_definition */
                 break;
             case 2: /* end_macro_definition */
-                printf("in case 2(end_macro)\n");
                 macro = NULL;
                 current_info = NULL;
                 break;
@@ -399,7 +369,6 @@ char * preprocessor(char * name){
                 current_info = NULL;
                 break;
             case 4: 
-                printf("adding line: %s to file_am\n", line);
                 fputs(line, file_am);   
                 break;   
         }
@@ -407,8 +376,6 @@ char * preprocessor(char * name){
     }
     
     if(macros != NULL){
-        printf("call for displayMacros:\n");
-        displayMacros(macros);
         free_Macros(macros);
     }
     free(file_as_name);
