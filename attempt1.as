@@ -19,7 +19,7 @@ L1: 	inc L3
 END: hlt
 mcr maico
 	cmp L1,L3
-	not CCC
+	not AAA
 endmcr
 mov r1,r2
 cmp label[3],label[y]
@@ -37,7 +37,7 @@ endmcr
 inc LOOP
 dec STR[3]
 bne L3
-CCC: cmp #2, LOOP
+AAA: cmp #2, LOOP
 red label[y]
 prn #988
 jsr L1
@@ -268,7 +268,7 @@ add r1,r2
 jsr r2
 mov #sz, r3
 .entry LIST 
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -283,7 +283,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 add label[sz ] , sz
@@ -308,7 +308,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -323,7 +323,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 add label[sz ] , r4
@@ -346,7 +346,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 add label[sz ] , r5
@@ -369,7 +369,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 
@@ -432,7 +432,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 sub r1, ALPHA26
 sub r1, BETA27
 sub r1, GAMMA28
@@ -467,7 +467,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 add label[2] , label[ 2 ]
 add label[ sz ], label[ 2 ]
 jmp LABEL
@@ -477,7 +477,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -508,7 +508,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 add r3 , label[ y ]
@@ -524,7 +524,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 cmp label[sz ] , sz
@@ -563,7 +563,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 add label[sz ] , r7
@@ -602,7 +602,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 add label[2] , label[ 2 ]
 add label[ sz ], label[ 2 ]
 jmp LABEL
@@ -612,7 +612,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 rts
 inc label[3]
 inc label[3]
@@ -637,7 +637,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -652,7 +652,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 hlt
@@ -710,7 +710,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -725,7 +725,6 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
 red r2
 add #sz , r7
 add label[sz ] , r3
@@ -749,7 +748,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -764,7 +763,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 add r3 , label[ y ]
@@ -786,7 +785,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -817,7 +816,7 @@ jsr L1
 rts
 hlt
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -832,7 +831,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 mov r1,r2
 cmp label[3],label[y]
@@ -851,7 +850,7 @@ jsr L1
 rts
 hlt
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 hlt
@@ -894,7 +893,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not C
+not AAA
 red r2
 add #sz , r7
 rts
@@ -908,7 +907,7 @@ mov STR[5],STR[2]
 ;jmp LABEL
 ;add r1,r2
 ;						jsr r2
-;;;;;;;;;;;;;;;;;;;;;;;not C
+;;;;;;;;;;;;;;;;;;;;;;;not AAA
 red r2
 add #sz , r7
 add label[sz ] , r5
