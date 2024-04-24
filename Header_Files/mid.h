@@ -17,6 +17,7 @@ typedef enum symType{
 struct symbol{      /* a label *//* hello: , x: ... or variable name like in define directive*/
     int is_symbol_define; /*is the symbol part of .define symbol = num*/
     int num_line_defined; /*the line number of the .define directive*/
+    int define_val; /*the value of the symbol in case it is a .define symbol = define_val*/
     int len_data; /*amount of elements in case it is a dataSymbol of data directive*/
     int len_string; /* length of the string in case it is a dataSymbol of string directive*/
     char symName[MAX_LABEL_LEN];
