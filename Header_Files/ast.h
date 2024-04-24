@@ -96,7 +96,7 @@ typedef enum address{
 /* the operands for the instructions */
 typedef struct inst_op{
     data data_inst;
-    int reg_num; /* number of the register , -1 if not relevant*/
+    int reg_num; /* number of the register (r1,r2,...,r7), -1 if not relevant*/
     address_type address_of_op; /* the address type of the operand */
 } inst_operands[2];
 
