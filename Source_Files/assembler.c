@@ -23,10 +23,7 @@
 int main(int argc, char *argv[]) {
     int i;
     FILE *amFile;
-    char *amFileName;
-    void *const *begin;
-    void *const *end;
-    struct symbol *symbol; 
+    char *amFileName; 
     struct translation_unit *translation_unit;
 
     if(argc < 2){
@@ -38,6 +35,7 @@ int main(int argc, char *argv[]) {
         
         printf("----------------------------------------------------------------------------------------------------- \n");
         printf("------------------------------  Assembling file: %s  started ---------------------------------------- \n", argv[i]);
+        printf("----------------------------------------------------------------------------------------------------- \n\n\n");
 
         amFileName = preprocessor(argv[i]);
         if(amFileName){
@@ -58,17 +56,11 @@ int main(int argc, char *argv[]) {
             printf("Error: file %s not found\n", amFileName);
             free(amFileName);
             free_translation_unit(translation_unit);
-            return 1;
+            continue;
         }
         else{
             if(!firstPass(translation_unit, amFileName, amFile)){ 
-                printf("********* printing symbols inside translation_unit:\n");
-                VECTOR_LOOP(begin, end, translation_unit->symbols) {
-                    if (*begin) {
-                    symbol = (struct symbol *) *begin;
-                    printf("********* symbol: %s, type: %d, address: %d\n", symbol->symName, symbol->symType, symbol->address);
-                    }
-                }
+                
                 printf("---------------------------------------------------------------------------------------------------- \n");
                 printf("---------------------------------  firstPass completed successfully -------------------------------- \n");
                 printf("---------------------------------------------------------------------------------------------------- \n");
@@ -77,11 +69,6 @@ int main(int argc, char *argv[]) {
                     printf("---------------------------------------------------------------------------------------------------- \n");
                     printf("---------------------------------  secondPass completed successfully -------------------------------- \n");
                     printf("---------------------------------------------------------------------------------------------------- \n");
-
-                    printf("********* printing code image:\n\n\n");
-                    print_code_image(translation_unit);
-                    printf("********* printing data image:\n\n\n");
-                    print_data_image(translation_unit); 
 
                     if(!make_ob_file(translation_unit,argv[i])){
                         printf("---------------------------------------------------------------------------------------------------- \n");
@@ -121,6 +108,8 @@ int main(int argc, char *argv[]) {
                 printf("---------------------------------------------------------------------------------------------------- \n");
                 printf("        -------------------------------  firstPass error ------------------------------- \n");
                 printf("---------------------------------------------------------------------------------------------------- \n");
+                free(amFileName);
+                free_translation_unit(translation_unit);
             }
 
             fclose(amFile);
