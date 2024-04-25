@@ -165,7 +165,6 @@ void init_ast(ast_tree *ast);
 void free_ast(ast_tree *ast);
 
 
-
 /**
  * @brief This function checks whether the line is a directive line, and if it is, it processes the directive in it.
  * 
@@ -230,6 +229,12 @@ int check_instruction(ast_tree *ast, char *line);
  * @return int 1 if the directive is legal, 0 otherwise.
  */
 int check_inst_operands(ast_tree *ast, char *line,int opcodeNum);
+
+
+/*************************************************************************************/
+/*****************************Auxiliary Functions*************************************/
+/*************************************************************************************/
+
 
 /**
  * @brief This functions checks if the label at the beginning of the line is legal.
