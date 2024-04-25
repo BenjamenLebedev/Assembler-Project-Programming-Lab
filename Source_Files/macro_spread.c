@@ -19,21 +19,28 @@ int is_legal_macro_name(char *name) {
     the instructions - mov,add, etc....
     the directives - data,string,extern,entry,define*/
     if (is_reg(name) != -1 || is_dir(name) != -1 || is_inst(name) != -1) {
+        printf("********** error: name %s used for macro cannot be a reserved word\n", name);
         return FALSE;
     }
     /*if the name is either the macro definition names - mcr,endmcr*/
-    if(strcmp(name, "mcr") == 0 || strcmp(name, "endmcr") == 0) return FALSE;
+    if(strcmp(name, "mcr") == 0 || strcmp(name, "endmcr") == 0){
+        printf("********** error: name used for macro cannot be either mcr or endmcr\n");
+        return FALSE;
+    } 
 
     
-
     len = strlen(name);
     for(i = 0; i < len; i++){
         if(!isalpha(name[0]) || !isprint(name[i]) || isspace(name[i])){
+            if(!isalpha(name[0])){
+                printf("********** error: Macro name must start with alphabet letter\n");
+            }
+            else if(!isprint(name[i]) || isspace(name[i])){
+                printf("********** error: Macro name must contain printable characters and no spaces in it\n");
+            }
             return FALSE;
         }
     }
-    
-    len = strlen(name);
 
     return TRUE;
 }
@@ -46,14 +53,14 @@ void addMacroInformation(struct macro* m, const char* line) {
     struct macro_information* info = (struct macro_information*)malloc(sizeof(struct macro_information));
     if (info == NULL) {
         /*  Handle memory allocation error */
-        fprintf(stdout, "Memory allocation error for macro structure\n");
+        fprintf(stdout, "********** error: Memory allocation error for macro structure\n");
         exit(EXIT_FAILURE);
     }
     line_len = strlen(line);
 
     info->line = (char*)malloc((line_len+1)*sizeof(char));
     if(info->line == NULL){
-        fprintf(stderr, "Memory allocation error for line of input\n");
+        fprintf(stderr, "********** error: Memory allocation error for line of input\n");
         free(info);
         exit(EXIT_FAILURE);
     }
@@ -79,25 +86,33 @@ void addMacroInformation(struct macro* m, const char* line) {
 void addMacro(struct macro** macros, const char* name, int * is_error) {
     struct macro* m = NULL;
     struct macro* current = NULL;
+    struct macro* check_name;
     size_t len;
+
+    check_name = is_string_macro((char *)name, macros);
+    if(check_name){
+        fprintf(stdout, "********** error: Macro with the name %s already exists\n", name);
+        *is_error = TRUE;
+        return;
+    }
 
     m = (struct macro*)malloc(sizeof(struct macro));
     if (m == NULL) {
          /* Handle memory allocation error */
-        fprintf(stdout, "Memory allocation error\n");
+        fprintf(stdout, "********** error: Memory allocation error for struct macro\n");
         exit(EXIT_FAILURE);
     }
     
     len = strlen(name);
     if(len == 0){
-        fprintf(stdout, "Error: macro name is empty\n");
+        fprintf(stdout, "********** error: macro name is empty  - needs to be something other than white spaces\n");
         *is_error = TRUE;
         return;
     }
     
     m->name = (char*)malloc((len + 1)*sizeof(char));
     if(m->name == NULL){
-        fprintf(stdout, "Memory allocation error\n");
+        fprintf(stdout, "********** error: Memory allocation error for macro name\n");
         exit(EXIT_FAILURE);
     }
     
@@ -116,7 +131,6 @@ void addMacro(struct macro** macros, const char* name, int * is_error) {
     if (*macros == NULL) {
         *macros = m;
         if(!is_legal_macro_name(m->name)){
-            printf("error: name %s used for macro not legal\n", m->name);
             *is_error = TRUE;
         }
     } else {
@@ -128,7 +142,6 @@ void addMacro(struct macro** macros, const char* name, int * is_error) {
         }
         current->next = m;
         if(!is_legal_macro_name(m->name)){
-            printf("error: name %s used for macro not legal\n", m->name);
             *is_error = TRUE;
         }
     }
@@ -159,9 +172,6 @@ void freeMacro_information(struct macro_information* info) {
 
     struct macro_information* temp;
 
-    if(!info){
-        printf("info is NULL in free_macros\n");
-    }
     /*iterates throw the list to free all the macro information*/
         while (info != NULL) {
             temp = info->next;
@@ -174,9 +184,7 @@ void freeMacro_information(struct macro_information* info) {
 /*freeing the whole content of the macros*/
 void free_Macros(struct macro* macros) {
     struct macro* next_macro;
-    if(!macros){
-        printf("macros is NULL in free_macros\n");
-    }
+
     next_macro = macros->next;
     /*irritates throw the list to free all the macros*/
     while (macros != NULL) {
@@ -226,7 +234,7 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
     /* if it's an empty line - just treat it as a regular line*/
     line_copy = (char *)malloc(strlen(line) + 1);
     if(!line_copy){
-        printf("********* Memory allocation error\n");
+        printf("********** error: Memory allocation error\n");
         return -1;
     }
     strcpy(line_copy, line);
@@ -286,7 +294,7 @@ char* read_line_input(char c,FILE* file){
     /*rellocating to get the character c in there*/
     inputLine = (char *) calloc(2, sizeof(char));
     if(!inputLine){
-        printf("********* Memory allocation error\n");
+        printf("********** error: Memory allocation error\n");
         return NULL;
     }
     strncpy(inputLine,&c,1); /*putting the character into the inputline*/
@@ -327,7 +335,7 @@ char * macro_spread(char * name){
     char *file_as_name = (char *)malloc(strlen(name) + strlen(as_extension) + 1); 
     char *file_am_name = (char *)malloc(strlen(name) + strlen(am_extension) + 1); 
     if(!file_as_name || !file_am_name){
-        printf("********* Memory allocation error\n");
+        printf("********** error: Memory allocation error\n");
         exit(EXIT_FAILURE);
     }
     strcpy(file_as_name, name);
@@ -340,7 +348,7 @@ char * macro_spread(char * name){
 
     /*check that something didn't go wrong in the fopen func*/
     if(!file_as || !file_am){
-        fprintf(stdout, "Error opening files - %s or %s\n",file_as_name, file_am_name);
+        fprintf(stdout, "********** error: Error opening files - %s or %s\n",file_as_name, file_am_name);
         free(file_as_name);
         free(file_am_name);
         return NULL;
