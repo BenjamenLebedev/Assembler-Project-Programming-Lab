@@ -15,22 +15,16 @@ void convertToSecretBase(int number, char secretBase[]) {
     /*    0    1    2    3     */
     /*    *    #    %    !     */
 
-    /* initialize the array with '*' */ 
-    if (number < 0) {
-        /* number = -number - 1;  */
-        for (i = 0; i < 7; i++) {
-            secretBase[i] = '!';
-        }
-    } else {
-        for (i = 0; i < 7; i++) {
-            secretBase[i] = '*';
-        }
+    /* initialize the array with '*' for positive and '!' for negative */ 
+    for (i = 0; i < WORD_LEN/2; i++) {
+        if(number < 0) secretBase[i] = '!';
+        else secretBase[i] = '*';
     }
-    secretBase[7] = '\0'; 
+    secretBase[WORD_LEN/2] = '\0'; 
 
     /* convert the number to secret base */
-    i = 6; /* start from the end of the array */
-    while (number > 0 && i >= 0) { /*if it is a positive number*/
+    i = WORD_LEN/2 - 1; /* start from the end of the array */
+    while ((number > 0 || number < 0) && i >= 0) { 
         mask = 3;
         pair = number & mask;
         switch (pair) {
@@ -49,27 +43,6 @@ void convertToSecretBase(int number, char secretBase[]) {
         }
         number >>= 2;
     }
-    /*if it is a negative number*/
-    while (number < 0 && i >= 0) {
-        mask = 3;
-        pair = number & mask;
-        switch (pair) {
-            case 0:
-                secretBase[i--] = '*';
-                break;
-            case 1:
-                secretBase[i--] = '#';
-                break;
-            case 2:
-                secretBase[i--] = '%';
-                break;
-            case 3:
-                secretBase[i--] = '!';
-                break;
-        }
-        number >>= 2;
-    }
-
 }
 
 /***********************************************************************************/
@@ -106,7 +79,7 @@ int make_ob_file(struct translation_unit *translation_unit, char *FileName){
 
     file_ob_name = (char *)malloc(strlen(FileName) + + strlen(ob_extension) + 1);
     if(!file_ob_name){
-        printf("********* Memory allocation error\n");
+        printf("********** error: Memory allocation error\n");
         free_translation_unit(translation_unit);
         return is_error = TRUE;
     }
@@ -114,7 +87,7 @@ int make_ob_file(struct translation_unit *translation_unit, char *FileName){
     strcat(file_ob_name, ob_extension);
     file_ob = fopen(file_ob_name, "w"); /*create file*/
     if(!file_ob){
-        printf("********* Error: cannot open file %s for writing\n", file_ob_name);
+        printf("********** error: cannot open file %s for writing\n", file_ob_name);
     }
 
     if(file_ob){
@@ -156,7 +129,7 @@ int make_extern_file(struct translation_unit *translation_unit, char *FileName){
 
     file_ext_name = (char *)malloc(strlen(FileName) + strlen(ext_extension) + 1);
     if(!file_ext_name){
-        printf("********* Memory allocation error\n");
+        printf("********** error: Memory allocation error\n");
         free_translation_unit(translation_unit);
     }
     strcpy(file_ext_name, FileName);
@@ -168,7 +141,7 @@ int make_extern_file(struct translation_unit *translation_unit, char *FileName){
     if(external && translation_unit->extern_use == TRUE){
         file_ext = fopen(file_ext_name, "w"); /*create file*/
         if(!file_ext){
-            printf("********* Error: cannot open file %s for writing\n", file_ext_name);
+            printf("********** error: cannot open file %s for writing\n", file_ext_name);
             is_error = TRUE;
         }
     }
@@ -203,7 +176,7 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
     
     file_ent_name = (char *)malloc(strlen(FileName) + strlen(ent_extension) + 1);
     if(!file_ent_name){
-        printf("********* Memory allocation error\n");
+        printf("********** error: Memory allocation error\n");
         free_translation_unit(translation_unit);
         exit(1);
     }
@@ -215,7 +188,7 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
     if(entrie && translation_unit->entry_use == TRUE && !is_error){
         file_ent = fopen(file_ent_name, "w"); /*create file*/
         if(!file_ent){
-            printf("********* Error: cannot open file %s for writing\n", file_ent_name);
+            printf("********** error: cannot open file %s for writing\n", file_ent_name);
             is_error = TRUE;
         }
         /*sorting the symbol vector by increasing addresses*/
@@ -223,7 +196,7 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
         if(!is_error){
             is_error = vector_sort_merge(translation_unit);
             if(is_error){
-                printf("********* Error: memory allocation error during sorting of entry symbols vector\n");
+                printf("********** error: memory allocation error during sorting of entry symbols vector\n");
                 free_translation_unit(translation_unit);
                 fclose(file_ent);
                 exit(1);
@@ -280,7 +253,7 @@ void mergeSort(void **arr, int n, int *is_error){
     l = (void **) malloc(mid * sizeof(void *));
     r = (void **) malloc((n-mid) * sizeof(void *));
     if(l == NULL || r == NULL){
-        printf("********* Memory allocation error\n");
+        printf("********** error: Memory allocation error\n");
         *is_error = TRUE;
         return;
     }
