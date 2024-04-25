@@ -1,12 +1,11 @@
 
-#include "../Header_Files/ast.h"
+#include "../Header_Files/lexer.h"
 #include "../Header_Files/global_var.h"
-#include "../Header_Files/vector.h"
-#include "../Header_Files/mid.h"
+#include "../Header_Files/vector_lib.h"
+#include "../Header_Files/firstSecond_Pass.h"
 #include "../Header_Files/t_unit.h"
-#include "../Header_Files/back.h" 
-#include "../Header_Files/pre.h"
-#include "../Header_Files/vector.h"
+#include "../Header_Files/code_convert.h" 
+#include "../Header_Files/macro_spread.h"
 
 int mains(int argc, char *argv[]){
 
@@ -27,7 +26,7 @@ int mains(int argc, char *argv[]){
             return 1;
         }
 
-        file_name = preprocessor(argv[1]);
+        file_name = macro_spread(argv[1]);
 
         if(file_name){
             printf("---------------------------------------------------------------------------------------------------- \n");
