@@ -7,7 +7,7 @@ struct translation_unit *create_translation_unit() {
     /*allocate memory for the translation unit*/
     struct translation_unit *unit = (struct translation_unit *)malloc(sizeof(struct translation_unit));
     if(unit == NULL) {
-        printf("Error: Memory allocation failed for translation unit.\n");
+        printf("********** error: Memory allocation failed for translation unit.\n");
         return NULL;
     }
     if (unit != NULL) { /*check if memory allocation succeeded*/
@@ -28,14 +28,14 @@ struct translation_unit *create_translation_unit() {
   
 void add_to_code_image(struct translation_unit *unit, int value) {
     if (unit == NULL) {
-        printf("Error: Invalid translation unit.\n");
+        printf("********** error: Invalid translation unit.\n");
         return;
     }
     /*dynamic allocation of memory*/
     if ((unit->IC % 10 +1) == 1) { /*if we to the 10th cell, increase the size by 10*/
         unit->code_image = (int *)realloc(unit->code_image, (unit->IC + 10) * sizeof(int));
         if (unit->code_image == NULL) {
-            printf("Error: Memory reallocation failed for code_image.\n");
+            printf("********** error: Memory reallocation failed for code_image.\n");
             free_translation_unit(unit);
             exit(1);
         }
@@ -45,14 +45,14 @@ void add_to_code_image(struct translation_unit *unit, int value) {
 
 void add_to_data_image(struct translation_unit *unit, int value) {
     if (unit == NULL) {
-        printf("Error: Invalid translation unit.\n");
+        printf("********** error: Invalid translation unit.\n");
         return;
     }
     /*dynamic allocation of memory*/
     if ((unit->DC % 10 +1)== 1) { /*if we to the 10th cell, increase the size by 10*/
         unit->data_image = (int *)realloc(unit->data_image, (unit->DC + 10) * sizeof(int));
         if (unit->data_image == NULL) {
-            printf("Error: Memory reallocation failed for data_image.\n");
+            printf("********** error: Memory reallocation failed for data_image.\n");
             return;
         }
     }
@@ -70,6 +70,8 @@ void free_translation_unit(struct translation_unit *unit) {
     }
 }
 
+/*prints to stdout the binary form of integer num
+with 14 bit*/
 void printBinary14(int num) {
     int i;
     /* start from the most significant bit and print each bit */
@@ -85,19 +87,19 @@ void print_code_image(struct translation_unit *unit) {
 
     int i; 
     if (unit == NULL) {
-        printf("Error: Invalid translation unit.\n");
+        printf("********** error: Invalid translation unit.\n");
         return;
     }
 
     /* check if the code_image array is NULL */
     if (unit->code_image == NULL) {
-        printf("Error: Empty code image.\n");
+        printf("********** error: Empty code image.\n");
         return;
     }
 
     /* Check if IC is zero */
     if (unit->IC == 0) {
-        printf("Error: IC is zero.\n");
+        printf("********** error: IC is zero.\n");
         return;
     }
 
