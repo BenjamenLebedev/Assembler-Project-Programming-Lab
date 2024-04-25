@@ -17,10 +17,6 @@ L1: 	inc L3
 .entry LOOP
 	bne LOOP 
 END: hlt
-mcr maico
-	cmp L1,L3
-	not AAA
-endmcr
 mov r1,r2
 cmp label[3],label[y]
 cmp label[ 3 ] , label[ y ]
@@ -29,22 +25,16 @@ sub r7,r7
 lea LOOP, r2
 not L1
 clr r7
-mcr prick
-	.entry TAIGO
-	.extern BURJKALIFA
-	cmp #2 , r4
-endmcr
 inc LOOP
 dec STR[3]
 bne L3
-AAA: cmp #2, LOOP
 red label[y]
 prn #988
 jsr L1
 rts
 hlt
 ; 
-hello: hlt
+
 LIST: .string "hello   23 world"
 
 .define len = 4
@@ -86,7 +76,6 @@ lea LOOP, r2
 not L1
 clr r7
 inc LOOP
-maico
 dec STR[3]
 bne L3
 red label[y]
@@ -163,7 +152,6 @@ aUjVqYm: .string "farewell"
 .extern XI39
 .extern OMICRON40
 
-TAIGO: cmp #2,r5
 bXwHfWt: .data 2,234,123,123,512,234,123,123,512,234,123,123,512
 cMyRtGs: .string "until next time"
 dLnWsSx: .data 2,234,123,123,512,234,123,123,512,234,123,123,512
@@ -210,7 +198,6 @@ huckleberry: .string "hello"
 kiwi: .data 2,234,123,123,512
 lychee: .string "hello"
 mango: .data 2,234,123,123,512
-prick
 nectarine: .string "hello"
 orange: .data 2,234,123,123,512
 peach: .string "hello"
@@ -268,7 +255,7 @@ add r1,r2
 jsr r2
 mov #sz, r3
 .entry LIST 
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -283,13 +270,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
-add label[2] , r3
+add label[2] , sz
 hlt
 .extern W 
 rts
@@ -308,7 +295,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -323,13 +310,14 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
-add label[sz ] , r4
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
-add label[2] , r7
+add label[2] , sz
+hlt
 rts
 inc label[3]
 inc label[3]
@@ -346,13 +334,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
-add label[sz ] , r5
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
-add label[2] , r2
+add label[2] , sz
 hlt
 rts
 inc label[3]
@@ -369,12 +357,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
-
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
+add label[2] , sz
 hlt
 sub r1, ALPHA26
 sub r1, BETA27
@@ -432,7 +421,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 sub r1, ALPHA26
 sub r1, BETA27
 sub r1, GAMMA28
@@ -467,7 +456,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 add label[2] , label[ 2 ]
 add label[ sz ], label[ 2 ]
 jmp LABEL
@@ -477,7 +466,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -508,11 +497,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
+add label[2] , sz
 hlt
 jsr label
 add label[2] , label[ 2 ]
@@ -524,13 +515,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
-cmp label[sz ] , sz
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
-cmp label[2] , sz
+add label[2] , sz
 hlt
 rts
 inc label[3]
@@ -563,13 +554,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
-add label[sz ] , r7
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
-add label[2] , r4
+add label[2] , sz
 hlt
 rts
 inc label[3]
@@ -602,7 +593,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 add label[2] , label[ 2 ]
 add label[ sz ], label[ 2 ]
 jmp LABEL
@@ -612,7 +603,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 rts
 inc label[3]
 inc label[3]
@@ -637,7 +628,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -652,9 +643,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
+add label[sz ] , sz
+add r3 , label[ y ]
+add #sz , label[2]
+add label[2] , sz
 hlt
 rts
 inc label[3]
@@ -672,10 +667,10 @@ jmp LABEL
 add r1,r2
 jsr r2
 add #sz , r7
-add label[sz ] , r7
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
-add label[2] , r1
+add label[2] , sz
 hlt
 rts
 inc label[3]
@@ -710,7 +705,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -725,12 +720,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
+not C
 red r2
 add #sz , r7
-add label[sz ] , r3
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
-add label[2] , r3
+add label[2] , sz
 hlt
 rts
 inc label[3]
@@ -748,7 +744,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -763,11 +759,13 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
+add label[2] , sz
 hlt
 rts
 inc label[3]
@@ -785,7 +783,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -816,7 +814,7 @@ jsr L1
 rts
 hlt
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -831,7 +829,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 mov r1,r2
 cmp label[3],label[y]
@@ -850,9 +848,13 @@ jsr L1
 rts
 hlt
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
+add label[sz ] , sz
+add r3 , label[ y ]
+add #sz , label[2]
+add label[2] , sz
 hlt
 rts
 inc label[3]
@@ -893,7 +895,7 @@ jmp LABEL
 add r1,r2
 jsr r2
 mov #sz, r3
-not AAA
+not C
 red r2
 add #sz , r7
 rts
@@ -907,17 +909,25 @@ mov STR[5],STR[2]
 ;jmp LABEL
 ;add r1,r2
 ;						jsr r2
-;;;;;;;;;;;;;;;;;;;;;;;not AAA
+;;;;;;;;;;;;;;;;;;;;;;;not C
 red r2
 add #sz , r7
-add label[sz ] , r5
+add label[sz ] , sz
 add r3 , label[ y ]
 add #sz , label[2]
-add label[2] , r6
+add label[2] , sz
 hlt
 rts
 
 
+
+	          
+	
+	      
+	
+	      
+
+			     
 sub r1, ALPHA26
 sub r1, BETA27
 sub r1, GAMMA28
