@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/assembler",
             "args": [
-                "try1_1"
+                "valid_input_1"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
