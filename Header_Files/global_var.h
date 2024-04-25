@@ -75,8 +75,9 @@ in the directives we use all 14 bits for the integer so the values are like this
 37 numbers at most (single digit numbers) - since the line is confined to 82 characters (including newline character)*/
 #define MAX_OFFSET 36
 
+
 /**************************************************************************************/
-/****************Global functions - used by most of the source files*******************/
+/************Global functions - used by nore than one of the source files**************/
 /**************************************************************************************/
 
 /**
@@ -142,5 +143,36 @@ int is_dir(char* str);
  * @return An integer. 1 if the string is empty. 0 otherwise.
  */
 int isEmptyString(char* str);
+
+
+/**
+ * @brief constructor function for a symbol struct
+ * 
+ * @param copy pointer to the symbol we want to copy 
+ * @return void* pointer to the new struct
+ */
+void *symbol_ctor(const void *copy);
+
+/**
+ * @brief destructor function for a symbol
+ * 
+ * @param item Pointer to the symbol structure to be destroyed
+ */
+void symbol_dtor(void *item);
+
+/**
+ * @brief constructor function for a extern struct
+ * 
+ * @param copy pointer to the extern we want to copy 
+ * @return void* pointer to the new struct
+ */
+void *extern_ctor(const void *copy);
+
+/**
+ * @brief destructor function for a extern
+ * 
+ * @param item Pointer to the extern structure to be destroyed
+ */
+void extern_dtor(void *item);
 
 #endif

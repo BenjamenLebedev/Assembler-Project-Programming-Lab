@@ -1,5 +1,5 @@
  
-#include "vector.h"
+#include "vector_lib.h"
 #include "global_var.h"
 
 #include "t_unit.h"
@@ -47,6 +47,16 @@ int make_extern_file(struct translation_unit *translation_unit, char *FileName);
  * @return returns TRUE (non-zero) if there was an error creating the file, otherwise FALSE (zero).
  */
 int make_entries_file(struct translation_unit *translation_unit, char *FileName);
+
+/**
+ * @brief generates the output files for a given translation unit.
+ * the function generates the object file .ob, external file .ext, and entries file .ent for the provided translation unit.
+ * 
+ * @param translation_unit the translation unit containing the data to be written to the files.
+ * @param FileName the base file name to be used for creating the output files.
+ * @return returns TRUE if there was an error creating any of the files, otherwise FALSE.
+ */
+int gen_output_files(struct translation_unit *translation_unit, char *FileName);
 
 /****************************************************************************/
 /**************functions for sorting the symbol(entry) vector****************/

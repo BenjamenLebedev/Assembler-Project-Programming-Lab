@@ -1,5 +1,5 @@
-#ifndef PRE_H
-#define PRE_H
+#ifndef MACRO_SPREAD_H
+#define MACRO_SPREAD_H
 
 #include "global_var.h"
 
@@ -108,11 +108,11 @@ struct macro *is_string_macro(char *string, struct macro** original_macros);
  */
 int macro_line_classifier(char * line, struct macro** macros, struct macro** macro, int * is_error);
 /**
- * @brief the main function for the preprocessor process 
+ * @brief the main function for the preprocessor process which finds and spreads macros in the file
  * 
  * @param name s pointer to string representing the name of the file we want to process
  * @return char* a pointer to a string holding the file name with the ".am" end
  */
-char *preprocessor(char *name);
+char *macro_spread(char *name);
 
 #endif

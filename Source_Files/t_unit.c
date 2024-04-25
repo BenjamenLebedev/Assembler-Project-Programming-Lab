@@ -1,8 +1,7 @@
 
 #include "../Header_Files/global_var.h"
 #include "../Header_Files/t_unit.h" 
-#include "../Header_Files/vector.h"
-#include "../Header_Files/mid.h"
+#include "../Header_Files/vector_lib.h"
  
 struct translation_unit *create_translation_unit() {
     /*allocate memory for the translation unit*/
@@ -24,6 +23,8 @@ struct translation_unit *create_translation_unit() {
     }
     return unit;
 }
+
+
   
 void add_to_code_image(struct translation_unit *unit, int value) {
     if (unit == NULL) {

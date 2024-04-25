@@ -1,7 +1,7 @@
-#ifndef MID_H
-#define MID_H
+#ifndef FIRSTSECOND_PASS_H
+#define FIRSTSECOND_PASS_H
 
-#include "vector.h"
+#include "vector_lib.h"
 #include "global_var.h" 
 #include "t_unit.h"
 
@@ -31,38 +31,12 @@ struct ext{
     char ext_name[MAX_LABEL_LEN];
 };
 
-
 /**
- * @brief constructor function for a symbol struct
+ * @brief initializes a symbol struct
  * 
- * @param copy pointer to the symbol we want to copy 
- * @return void* pointer to the new struct
+ * @param symbol pointer to the symbol struct
+ * @return struct symbol* pointer to the symbol struct
  */
-void *symbol_ctor(const void *copy);
-
-/**
- * @brief destructor function for a symbol
- * 
- * @param item Pointer to the symbol structure to be destroyed
- */
-void symbol_dtor(void *item);
-
-/**
- * @brief constructor function for a extern struct
- * 
- * @param copy pointer to the extern we want to copy 
- * @return void* pointer to the new struct
- */
-void *extern_ctor(const void *copy);
-
-/**
- * @brief destructor function for a extern
- * 
- * @param item Pointer to the extern structure to be destroyed
- */
-void extern_dtor(void *item);
-
-
 struct symbol * init_symbol(struct symbol *symbol);
 
 /**

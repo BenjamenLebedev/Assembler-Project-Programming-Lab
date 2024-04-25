@@ -1,5 +1,5 @@
-#ifndef AST_H
-#define AST_H
+#ifndef LEXER_H
+#define LEXER_H
 
 #include "global_var.h"
 

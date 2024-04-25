@@ -1,12 +1,7 @@
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h> 
-#include <string.h>
-#include <stdlib.h> 
-#include "../Header_Files/pre.h"
-#include "../Header_Files/global_var.h"
-#include "../Header_Files/ast.h"
 
+#include "../Header_Files/macro_spread.h"
+#include "../Header_Files/global_var.h"
+#include "../Header_Files/lexer.h"
 
 
 /*checking to see if the name used for macro definition is legal
@@ -139,7 +134,7 @@ void addMacro(struct macro** macros, const char* name, int * is_error) {
     }
 }
 
-
+/*function to display information of a macro*/
 void displayMacro_information(const struct macro* macro) {
     struct macro_information* info = macro->info_head;
         while (info != NULL) {
@@ -149,7 +144,7 @@ void displayMacro_information(const struct macro* macro) {
         }
 }
 
-/* Function to display the content of the macros */
+/* Function to display the all the macros in the macro master list */
 void displayMacros(const struct macro* macros) {
     const struct macro* current = macros;
     while (current != NULL) {
@@ -159,8 +154,8 @@ void displayMacros(const struct macro* macros) {
     }
 }
 
-
- void freeMacro_information(struct macro_information* info) {
+/*freeing all the content of the macro information*/
+void freeMacro_information(struct macro_information* info) {
 
     struct macro_information* temp;
 
@@ -176,6 +171,7 @@ void displayMacros(const struct macro* macros) {
         }        
 }
 
+/*freeing the whole content of the macros*/
 void free_Macros(struct macro* macros) {
     struct macro* next_macro;
     if(!macros){
@@ -192,7 +188,7 @@ void free_Macros(struct macro* macros) {
     }
 }
 
-
+/*returns the pointer of the last macro is the macros master list*/
 struct macro * pointer_to_last_macro(struct macro** macros){
     struct macro* current = *macros;
     struct macro* nextMacro = current->next;
@@ -200,20 +196,18 @@ struct macro * pointer_to_last_macro(struct macro** macros){
         current = nextMacro;  
         nextMacro = nextMacro->next;
     }
-    if(*macros){
-        printf("macros is NOT null in pointer_to_last_macro*********************\n");
-    }
+
     return current;
 } 
 
- 
-struct macro * is_string_macro(char * string, struct macro** original_macros){
+/*searching for a macro with the name macro_name in the original_macros master list*/
+struct macro * is_string_macro(char * macro_name, struct macro** original_macros){
 
     struct macro* macros = *original_macros;
 
     while(macros){
 
-        if(strcmp(macros->name, string) == 0){
+        if(strcmp(macros->name, macro_name) == 0){
             return macros;
         }
         macros = macros->next;
@@ -222,6 +216,7 @@ struct macro * is_string_macro(char * string, struct macro** original_macros){
     return NULL;
 }
 
+/*going through the line and identifying macro definitions, macro calls or regular lines*/
 int macro_line_classifier(char * line, struct macro** macros, struct macro** macro, int * is_error){
     struct macro* wanted_macro = NULL;
     char *line_copy;
@@ -243,6 +238,7 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
     
     token = strtok(line_copy, SPACES);
     token = trimStartEnd(token);/*first token of line without spaces */
+    /*possible encounter of macro definition*/
     if(strcmp(token, "mcr") == 0){
         token = strtok(NULL, SPACES); /*name of macro*/
         if (token) {
@@ -254,21 +250,24 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
         }
 
     }
+    /*line with ending definition of a macro*/
     else if(strcmp(token, "endmcr") == 0){
         free(line_copy);
         return end_macro_definition;
     }
+    /*if we're within a definition of a macro, the add the line to it*/
     else if(*macro){
         addMacroInformation(*macro, line);
         free(line_copy);
         return in_macro_definition;
     }
+    /*a call for a macro after the definition of it earlier*/
     else if((wanted_macro = is_string_macro(token, macros))){
         *macro = wanted_macro;
         free(line_copy);
         return macro_call;
     }
-    else{
+    else{ /*just a regular line - outside macro definition and not macro call*/
         free(line_copy);
         return regular_line;
     }
@@ -312,7 +311,7 @@ char* read_line_input(char c,FILE* file){
 
 
 
-char * preprocessor(char * name){
+char * macro_spread(char * name){
     int is_error = FALSE;
 
     struct macro* macros = NULL; /*data structure to holed the macros*/
@@ -324,7 +323,7 @@ char * preprocessor(char * name){
     char *as_extension = ".as";
     char *am_extension = ".am";
 
-    /*allocate memory and concentrate the strings to get their full name*/
+    /*allocate memory and concate the strings to get their full name*/
     char *file_as_name = (char *)malloc(strlen(name) + strlen(as_extension) + 1); 
     char *file_am_name = (char *)malloc(strlen(name) + strlen(am_extension) + 1); 
     if(!file_as_name || !file_am_name){
@@ -347,13 +346,14 @@ char * preprocessor(char * name){
         return NULL;
     }
 
+    /*iterating through the as file to identify all macros */
     while((c = fgetc(file_as)) != EOF){
         line = read_line_input(c, file_as);
         
         switch(macro_line_classifier(line, &macros, &macro, &is_error)){
             case 0: /*macro_definition*/
                 break;
-            case 1: /* in_macro_definition */
+            case 1: /* in_macro_definition  - lines within the macro*/
                 break;
             case 2: /* end_macro_definition */
                 macro = NULL;
@@ -368,7 +368,7 @@ char * preprocessor(char * name){
                 macro = NULL;
                 current_info = NULL;
                 break;
-            case 4: 
+            case 4: /*regular line*/
                 fputs(line, file_am);   
                 break;   
         }
@@ -379,8 +379,6 @@ char * preprocessor(char * name){
         free_Macros(macros);
     }
     free(file_as_name);
-/*     free(file_am_name); */
-/*     macros = NULL; */
     fclose(file_as);
     fclose(file_am);
     if(is_error){

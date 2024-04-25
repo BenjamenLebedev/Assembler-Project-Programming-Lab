@@ -1,9 +1,9 @@
 
-#include "../Header_Files/vector.h"
-#include "../Header_Files/mid.h"
+#include "../Header_Files/vector_lib.h"
+#include "../Header_Files/firstSecond_Pass.h"
 #include "../Header_Files/global_var.h"
 #include "../Header_Files/t_unit.h"
-#include "../Header_Files/back.h"
+#include "../Header_Files/code_convert.h"
 
 
 void convertToSecretBase(int number, char secretBase[]) {
@@ -75,6 +75,24 @@ void convertToSecretBase(int number, char secretBase[]) {
 /***********************************************************************************/
 /***********************functions to print object files*****************************/
 /***********************************************************************************/
+
+int gen_output_files(struct translation_unit *translation_unit, char *FileName){
+    int is_error = FALSE;
+    
+    if(make_ob_file(translation_unit, FileName)){
+        is_error = TRUE;
+    }
+
+    if(make_extern_file(translation_unit, FileName)){
+        is_error = TRUE;
+    }
+
+    if(make_entries_file(translation_unit, FileName)){
+        is_error = TRUE;
+    }
+    
+    return is_error;
+}
 
 int make_ob_file(struct translation_unit *translation_unit, char *FileName){
     int i,total;
