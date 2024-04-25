@@ -1,12 +1,12 @@
 
-#include "../Header_Files/ast.h"
+#include "../Header_Files/lexer.h"
 #include "../Header_Files/global_var.h"
-#include "../Header_Files/vector.h"
-#include "../Header_Files/mid.h"
+#include "../Header_Files/vector_lib.h"
+#include "../Header_Files/firstSecond_Pass.h"
 #include "../Header_Files/t_unit.h"
-#include "../Header_Files/back.h" 
-#include "../Header_Files/pre.h"
-#include "../Header_Files/vector.h"
+#include "../Header_Files/code_convert.h" 
+#include "../Header_Files/macro_spread.h"
+#include "../Header_Files/vector_lib.h"
    
 /**
  * @brief This program is an assembler for the assembly language described in the project.
@@ -33,81 +33,59 @@ int main(int argc, char *argv[]) {
 
     for (i = 1; i < argc; i++){
         
-        printf("----------------------------------------------------------------------------------------------------- \n");
-        printf("------------------------------  Assembling file: %s  started ---------------------------------------- \n", argv[i]);
-        printf("----------------------------------------------------------------------------------------------------- \n\n\n");
+        printf("-----  Assembly of file: %s  started \n\n", argv[i]);
+        
+        amFileName = macro_spread(argv[i]);
 
-        amFileName = preprocessor(argv[i]);
-        if(amFileName){
-            printf("---------------------------------------------------------------------------------------------------- \n");
-            printf("-------------------------------  preprocessor completed successfully ------------------------------- \n");
-            printf("---------------------------------------------------------------------------------------------------- \n");
-        }
-        else{
-            printf("---------------------------------------------------------------------------------------------------- \n");
-            printf("      -------------------------------  preprocessor error ------------------------------- \n");
-            printf("---------------------------------------------------------------------------------------------------- \n");
+        if(!amFileName){
+            printf("***** Error: macro spread process failed  \n");
+            printf("***** since am file wasn't generated, this assembly process failed. \n");
+            printf("***** moving on to next file, if there is one.\n\n");
+            printf("-----  Assembly of file: %s  FAILED \n\n", argv[i]);
+            continue;
         }
         
         translation_unit = create_translation_unit();
 
         amFile = fopen(amFileName, "r");
         if(!amFile){
-            printf("Error: file %s not found\n", amFileName);
+            printf("***** error: Could not open file %s%s reading. moving on to the next file\n", amFileName,".am");
             free(amFileName);
             free_translation_unit(translation_unit);
             continue;
         }
         else{
+
             if(!firstPass(translation_unit, amFileName, amFile)){ 
                 
-                printf("---------------------------------------------------------------------------------------------------- \n");
-                printf("---------------------------------  firstPass completed successfully -------------------------------- \n");
-                printf("---------------------------------------------------------------------------------------------------- \n");
                 rewind(amFile); 
-                if(!secondPass(translation_unit, amFileName, amFile)){ 
-                    printf("---------------------------------------------------------------------------------------------------- \n");
-                    printf("---------------------------------  secondPass completed successfully -------------------------------- \n");
-                    printf("---------------------------------------------------------------------------------------------------- \n");
 
-                    if(!make_ob_file(translation_unit,argv[i])){
-                        printf("---------------------------------------------------------------------------------------------------- \n");
-                        printf("------------------------------------  make_ob_file completed successfully -------------------------- \n");
-                        printf("---------------------------------------------------------------------------------------------------- \n");
-                        if(!make_extern_file(translation_unit,argv[i])){
-                            printf("---------------------------------------------------------------------------------------------------- \n");
-                            printf("-----------------------------  make_extern_file completed successfully ----------------------------- \n");
-                            printf("---------------------------------------------------------------------------------------------------- \n");
-                            
-                            if(!make_entries_file(translation_unit,argv[i])){
-                                printf("---------------------------------------------------------------------------------------------------- \n");
-                                printf("-----------------------------  make_entries_file completed successfully ----------------------------- \n");
-                                printf("---------------------------------------------------------------------------------------------------- \n");
-                                printf("\n\n\n");
-                                printf("----------------------------------------------------------------------------------------------------- \n");
-                                printf("--------------------------  Assembling file: %s.as finished successfully ---------------------------- \n", argv[i]);
-                                printf("----------------------------------------------------------------------------------------------------- \n\n");
-                            }  
-                        }
+                if(!secondPass(translation_unit, amFileName, amFile)){ 
+
+                    if(!gen_output_files(translation_unit,argv[i])){
+                        printf("-----  Assembly of file: %s  finished successfully! \n\n\n", argv[i]);
                     }
                     else {
-                        printf("---------------------------------------------------------------------------------------------------- \n");
-                        printf("          -------------------------------  Back error ------------------------------- \n");
-                        printf("---------------------------------------------------------------------------------------------------- \n");
+                        printf("\n-----  Assembly of file: %s FAILED: error generating one of the required output files.\n",argv[i]);
+                        printf("-----moving on to next file\n\n\n");
                     }
-
                 }
                 else{
-                    printf("---------------------------------------------------------------------------------------------------- \n");
-                    printf("        -------------------------------  secondPass error ------------------------------- \n");
-                    printf("---------------------------------------------------------------------------------------------------- \n");
+                    
+                    printf("\n***** errors were encountered in the second pass of the assembly code\n");
+                    printf("---- Assembly of file: %s FAILED!\n-----output files were not generated. moving on to next file\n\n\n",argv[i]);
+                    
+                    free(amFileName);
+                    free_translation_unit(translation_unit);
+                    continue;
                 }
                 
             }
             else{
-                printf("---------------------------------------------------------------------------------------------------- \n");
-                printf("        -------------------------------  firstPass error ------------------------------- \n");
-                printf("---------------------------------------------------------------------------------------------------- \n");
+                
+                printf("\n***** errors were encountered in the first pass of the assembly code\n");
+                printf("---- Assembly of file: %s FAILED!\n-----output files were not generated. moving on to next file\n\n\n",argv[i]);
+                
                 free(amFileName);
                 free_translation_unit(translation_unit);
                 continue;
