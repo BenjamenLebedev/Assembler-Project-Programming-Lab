@@ -232,7 +232,7 @@ int macro_line_classifier(char * line, struct macro** macros, struct macro** mac
     
 
     /* if it's an empty line - just treat it as a regular line*/
-    line_copy = (char *)malloc(strlen(line) + 1);
+    line_copy = (char *)malloc((strlen(line) + 1)*sizeof(char));
     if(!line_copy){
         printf("********** error: Memory allocation error\n");
         return -1;
