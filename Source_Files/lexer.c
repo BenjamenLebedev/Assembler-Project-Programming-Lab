@@ -241,7 +241,7 @@ int check_directive(ast_tree *ast, char *line){
 
 
     /* extracting the part of the directive, after a dot */
-    token = my_strtok(line, " ", saveptr);
+    token = my_strtok(line, SPACES, saveptr);
     line += strlen(token) + 1; /* skipping the directive for checking operands later */
     line = trimStartEnd(line);
     
@@ -307,7 +307,7 @@ int check_entry_extern(ast_tree *ast, char *line){
     if(!saveptr) return 0;
 
 
-    token = my_strtok(line, " ", saveptr);
+    token = my_strtok(line, SPACES, saveptr);
     /* if there's nothing in the recieved string, then we have no operand */
     if(!token || isEmptyString(token)){
         strcpy(ast->errors, "Missing label after entry/extern directive\n");
@@ -336,10 +336,14 @@ int check_entry_extern(ast_tree *ast, char *line){
 
     ast->operands.dir_ops.num_count = ++index;
 
-    /* extra arguments after the label */
-    if((token = my_strtok(NULL, " ", saveptr))){
+    /* extra arguments after the label - if there are any*/
+    token = my_strtok(NULL, SPACES, saveptr);
+
+    if(token){
+        while(token && isEmptyString(token)) token = my_strtok(NULL, SPACES, saveptr);
         strcpy(ast->errors, "Too many arguments for directive entry/extern\n");
         free(check_label);
+        free(DIR_OP_DATA(ast,--index).data_option.label);
         FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
