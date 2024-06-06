@@ -130,6 +130,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                     free(symbol);
                     free(line);
                     exit(1);
+                    
                 }
                 
                 printf("********** error: syntax error in file: %s line: %s\n    %s\n", amFileName, line, ast->errors);
