@@ -7,7 +7,7 @@
 #include "../Header_Files/code_convert.h" 
 #include "../Header_Files/macro_spread.h"
 
-int mains(int argc, char *argv[]){
+int mainssss(int argc, char *argv[]){
 
     FILE *input;
     char filename[100];
