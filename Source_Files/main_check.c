@@ -19,6 +19,8 @@ int mains(int argc, char *argv[]){
     
 
     precheck = 1;
+    series = -1;
+
     if(precheck){
 
         if(argc < 2){
@@ -41,7 +43,7 @@ int mains(int argc, char *argv[]){
 
         free(file_name);
     }
-    series = -1;
+    
     if(series == 1){
 
         if(argc < 2){
