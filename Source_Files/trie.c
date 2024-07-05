@@ -1,5 +1,5 @@
-#include "./Header_Files/index.h"
-#include "./Header_Files/trie.h"
+#include "../Header_Files/global_var.h"
+#include "../Header_Files/trie.h"
 
 /* Functions concerning maintaining a Trie structure - that stores strings and records their appearances 
 in each line of input.*/
@@ -15,23 +15,26 @@ static void trie_travel_internal(trie_node *node,void (*print_func)(data *ptr),d
 /**************************************Core functions of the Trie structure**************************************/
 /****************************************************************************************************************/
 
+// handling memory allocation errors is done outside this function.
 Trie trie() {
-    Trie t = (Trie) calloc(1,sizeof(struct trie));
-    if(t == NULL) print_error_alloc();
-    return t;
+    return (Trie) calloc(1,sizeof(struct trie));
 }
 
 const char *trie_insert(Trie trie,const char *str,int line_num) {
     const char * temp = str;
     trie_node **node_ptr;
+    char *alloc_err = "memory allocation error";
 
-    if(is_valid_str(str)) return NULL;
+    // if the string is empty or it's NULL, there's no point in inserting it into the trie
+    if(!str || *str == '\0' || isEmptyString((char*) str)) return NULL;
+
     node_ptr = &trie->children[(*str) - TRIE_START_CHAR]; /* the 'node' that travels along the tree and assigns values*/
     while(1) {
         if(*node_ptr == NULL) {
             (*node_ptr) = (trie_node *) calloc(1,sizeof(struct trie_node));
             if(*node_ptr == NULL){
-                print_error_alloc();
+                trie_full_delete(&trie); /* if the allocation failed, ABORT*/
+                return alloc_err;
             } 
         }
         str++;
@@ -48,7 +51,7 @@ void trie_delete(Trie trie,const char *str,int line_num) {
     struct trie_node * find_node;
 
     /* if the string is empty or it's NULL, there's no point in deleting it from the trie*/
-    if(is_valid_str(str)) return;
+    if(!str || *str == '\0' || isEmptyString((char*) str)) return;
 
     find_node = trie_exists_sub(trie->children[(*str) - TRIE_START_CHAR],str+1);
     if(find_node){ /* if the string was found in the trie, then it's data is erased to make
@@ -77,6 +80,7 @@ char* trie_check_exists(Trie trie,const char *str,int line_num) {
 void trie_update_node(trie_node **node,const char *str,int line_num){
     data *temp;
     temp = &(*node)->string_data;
+    char *alloc_err = "memory allocation error";
 
     /* if the node is not representing a valid string, then update it with all the fields in it*/
     if((*temp).word_str == NULL){ 
