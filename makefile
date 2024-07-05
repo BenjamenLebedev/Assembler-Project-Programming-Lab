@@ -1,6 +1,7 @@
 # Compiler
 CC = gcc
 CFLAGS = -Wall -ansi -pedantic -g
+FLAGS = -Wall -pedantic -g
 ASAN = -fsanitize=address
 FOLDERNAME = Assembler-Project
 SRCS = ${shell ls ./Source_Files/*.c}
@@ -16,11 +17,11 @@ all: $(TARGET)
 
 # Compile source files into object files
 %.o: %.c $(LIB)
-	$(CC) $(CFLAGS) $(ASAN) $ -c $< -o $@
+	$(CC) $(FLAGS) $(ASAN) $ -c $< -o $@
 
 # Link object files into executable
 $(TARGET): $(OBJS) $(LIB)
-	$(CC) $(CFLAGS) $(ASAN) $(OBJS) -o $@
+	$(CC) $(FLAGS) $(ASAN) $(OBJS) -o $@
 
 # Clean up object files and executable
 clean:
