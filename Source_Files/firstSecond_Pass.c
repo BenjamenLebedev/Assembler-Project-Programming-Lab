@@ -123,7 +123,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         /*Or if the line is empty, move on to the next line*/
         if (ast->errors[0] != '\0' || ast->typeofLine == empty) {
             if(ast->errors[0] != '\0'){
-                if(FOUND_ALLOC_ERROR){
+                if(ALLOC_ERR_LEXER){
                     printf("**********  error: Memory allocation error\n");
                     free_translation_unit(translation_unit);
                     free_ast(ast);

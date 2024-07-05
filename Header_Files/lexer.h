@@ -381,7 +381,7 @@ void free_op_address_0(address_0_op *operand_type_0);
 /*shortening part of the structure chain of the AST for the data of instructions*/
 #define INST_OP_DATA(ast,index) (*ast).operands.inst_ops[index].data_inst
 
-#define FOUND_ALLOC_ERROR strstr(ast->errors,"Memory allocation")
+#define ALLOC_ERR_LEXER strstr(ast->errors,"Memory allocation")
 
 #define FREE_SAVEPTR(saveptr,movptr) {\
     if(saveptr){\

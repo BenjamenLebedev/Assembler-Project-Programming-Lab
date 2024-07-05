@@ -60,7 +60,7 @@ ast_tree *ast_line(char* line){
         ast->typeofLine = error;
         return ast;
     }
-    if(!mid_newline && FOUND_ALLOC_ERROR){
+    if(!mid_newline && ALLOC_ERR_LEXER){
         ast->typeofLine = error;
         return ast;
     }
@@ -319,7 +319,7 @@ int check_entry_extern(ast_tree *ast, char *line){
     /*checking the argument label*/
     check_label = check_legal_label(ast, token, 1);
     if(!check_label){
-        if(!FOUND_ALLOC_ERROR) strcpy(ast->errors, "Illegal label after entry/extern directive\n");
+        if(!ALLOC_ERR_LEXER) strcpy(ast->errors, "Illegal label after entry/extern directive\n");
         FREE_SAVEPTR(saveptr,movptr)
         return 0;
     }
@@ -395,7 +395,7 @@ int check_data_dir(ast_tree *ast, char *line){
         is_int = is_integer(token,dir);/*just an integer*/
         /*a label defined as integer elsewhere*/
         is_label = check_legal_label(ast,token,1);
-        if(!is_label && FOUND_ALLOC_ERROR){
+        if(!is_label && ALLOC_ERR_LEXER){
             FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
@@ -538,7 +538,7 @@ int check_define(ast_tree *ast, char *line){
     label = NULL; /*checking the legality of the symbol - like a label*/
     if(!(label = check_legal_label(ast, token, 1))){
         FREE_SAVEPTR(saveptr,movptr)
-        if(!FOUND_ALLOC_ERROR){
+        if(!ALLOC_ERR_LEXER){
             strcpy(ast->errors, "Illegal symbol after .define directive\n");
             return 0;
         } 
@@ -713,7 +713,7 @@ int check_inst_operands(ast_tree *ast, char *line,int opcodeNum){
 
         /*checking the possible types of operands*/
         check_label = check_legal_label(ast, token, 1);
-        if(!check_label && FOUND_ALLOC_ERROR){
+        if(!check_label && ALLOC_ERR_LEXER){
             FREE_SAVEPTR(saveptr,movptr)
             return 0;
         }
@@ -941,7 +941,7 @@ offset *check_label_offset(ast_tree *ast, char *str){
         if(i == 1){ /* label of the offset*/
             label_array = check_legal_label(ast,token,1);
             /*allocation failed for the label_array for the offset*/
-            if(!label_array && FOUND_ALLOC_ERROR){
+            if(!label_array && ALLOC_ERR_LEXER){
                 FREE_SAVEPTR(saveptr,movptr)
                 free_offset_struct(offset_var);
                 return NULL;
@@ -956,7 +956,7 @@ offset *check_label_offset(ast_tree *ast, char *str){
         else if(i == 2){ /* the offset number itself  */
             is_offset_int = is_integer(token,inst); /*just an integer*/
             label_offset = check_legal_label(ast,token,1); /*integer presented as a variable*/
-            if(!label_offset && FOUND_ALLOC_ERROR){
+            if(!label_offset && ALLOC_ERR_LEXER){
                 if(label_array) free(label_array);
                 free_offset_struct(offset_var);
                 FREE_SAVEPTR(saveptr,movptr)
@@ -1070,7 +1070,7 @@ address_0_op *address_type_0(ast_tree *ast,char *str){
 
     /*the 3 options - just an integer,label,label with offset*/
     check_label = check_legal_label(ast,str,1);
-    if(!check_label && FOUND_ALLOC_ERROR){
+    if(!check_label && ALLOC_ERR_LEXER){
         free(result);
         return NULL;
     }
