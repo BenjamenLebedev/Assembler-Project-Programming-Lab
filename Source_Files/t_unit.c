@@ -16,8 +16,8 @@ struct translation_unit *create_translation_unit() {
         unit->DC = 0;
         unit->code_image = NULL;
         unit->data_image = NULL;
-        unit->symbols = new_vector(symbol_ctor, symbol_dtor);
-        unit->externals = new_vector(extern_ctor, extern_dtor);
+        unit->symbols = new_vector(symbol_ctor, sym_dtor);
+        unit->externals = new_vector(extern_ctor, sym_dtor);
         unit->extern_use = FALSE;
         unit->entry_use = FALSE;
     }
