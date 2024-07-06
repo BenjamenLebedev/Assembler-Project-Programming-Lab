@@ -25,7 +25,7 @@ $(TARGET): $(OBJS) $(LIB)
 
 # Clean up object files and executable
 clean:
-	rm -f $(OBJS) $(TARGET) $(OUT)
+	rm -f $(OBJS) *.o $(TARGET) $(OUT)
 
 valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(TARGET) $(ARGS)
