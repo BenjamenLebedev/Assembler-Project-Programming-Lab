@@ -1,6 +1,6 @@
 # Compiler
 CC = gcc
-CFLAGS = -Wall -ansi -pedantic -g
+C90 = -ansi
 FLAGS = -Wall -pedantic -g
 ASAN = -fsanitize=address
 FOLDERNAME = Assembler-Project
