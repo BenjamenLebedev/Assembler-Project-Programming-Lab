@@ -4,12 +4,12 @@
 /* The library to implement a trie structure to search for strings and print their occurences*/
 
 #define TRIE_START_CHAR ' ' /* the start character from which we count the children of each node */
-#define ALPHABET_SIZE 95 /* the size of the alphabet in ascii */
+#define ALPHABET_SIZE 95 // the size of the alphabet in ascii from ' ' to '~'
 
 typedef struct data_of_string {
-    char *word_str; /* a string that is null if the node does not represent a valid string*/
+    char *sym_str; /* a string that is null if the node does not represent a valid string*/
     int word_count; /* the number of appearances of the word - with each line considered as one appearance */
-    int *line_appears; /* the line numbers at which word_str appears */
+    int *line_appears; /* the line numbers at which sym_str appears */
 } data;
 
 typedef struct trie_node {
@@ -19,7 +19,7 @@ typedef struct trie_node {
 
 /* the trie is basically the root of the tree */
 typedef struct trie {
-    trie_node * children[ALPHABET_SIZE]; 
+    trie_node *children[ALPHABET_SIZE]; 
 } trie_tree;
 
 typedef struct trie* Trie;
@@ -56,8 +56,9 @@ char* trie_check_exists(Trie trie,const char *str,int line_num);
  * @param node the node to update.
  * @param str the string to insert in the trie.
  * @param line_num the line number of the string.
+ * @return 1 if the update was successful, 0 otherwise (mainly due to alloc errors).
  */
-void trie_update_node(trie_node **node,const char *str,int line_num);
+int trie_update_node(trie_node **node,const char *str,int line_num);
 
 /**
  * @brief prints all the strings in the trie in lexicographical order.
@@ -80,7 +81,7 @@ void trie_delete(Trie trie,const char *str,int line_num);
 /**
  * @brief completely deallocates all memory for the Trie. destroying it completey.
  * 
- * @param trie 
+ * @param trie the trie structure to be destroyed.
  */
 void trie_full_delete(Trie * trie);
 
