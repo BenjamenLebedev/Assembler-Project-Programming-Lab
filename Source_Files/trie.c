@@ -35,7 +35,7 @@ const char *trie_insert(Trie trie,const char *str,int line_num) {
             if(*node_ptr == NULL){
                 trie_full_delete(&trie); /* if the allocation failed, ABORT*/
                 return alloc_err;
-            } 
+            }
         }
         str++;
         if(*str !='\0') node_ptr = &(*node_ptr)->children[(*str) - TRIE_START_CHAR];
@@ -56,7 +56,7 @@ void trie_delete(Trie trie,const char *str,int line_num) {
     find_node = trie_exists_sub(trie->children[(*str) - TRIE_START_CHAR],str+1);
     if(find_node){ /* if the string was found in the trie, then it's data is erased to make
                       it an ordinary node and not a one representing a valid string */
-        (*find_node).string_data.word_str = NULL;
+        (*find_node).string_data.sym_str = NULL;
         (*find_node).string_data.word_count--;
         (*find_node).string_data.line_appears = NULL;
     } 
@@ -74,35 +74,34 @@ char* trie_check_exists(Trie trie,const char *str,int line_num) {
     if(find_node != NULL){
         trie_update_node(&find_node,str,line_num);
     }
-    return find_node == NULL ? NULL : (*find_node).string_data.word_str;
+    return find_node == NULL ? NULL : (*find_node).string_data.sym_str;
 }
 
-void trie_update_node(trie_node **node,const char *str,int line_num){
+int trie_update_node(trie_node **node,const char *str,int line_num){
     data *temp;
     temp = &(*node)->string_data;
-    char *alloc_err = "memory allocation error";
 
     /* if the node is not representing a valid string, then update it with all the fields in it*/
-    if((*temp).word_str == NULL){ 
-        (*temp).word_str = (char *) calloc(strlen(str)+1,sizeof(char));
-        if((*temp).word_str == NULL) print_error_alloc(); /* if the allocation failed, ABORT*/
-        strcpy((*temp).word_str,(char*) str);
+    if((*temp).sym_str == NULL){ 
+        (*temp).sym_str = (char *) calloc(strlen(str)+1,sizeof(char));
+        if((*temp).sym_str == NULL) return 0; /* if the allocation failed, ABORT*/
+        strcpy((*temp).sym_str,(char*) str);
 
         (*temp).word_count++;
         (*temp).line_appears = (int *) calloc((*temp).word_count,sizeof(int));
-        if((*temp).line_appears == NULL) print_error_alloc(); /* if the allocation failed, ABORT*/
+        if((*temp).line_appears == NULL) return 0; /* if the allocation failed, ABORT*/
         (*temp).line_appears[(*temp).word_count - 1] = line_num;
     }
     /* if the node is already representing a valid string, then only update if it appears in a different line then before*/
     else{
-        if((*temp).line_appears[(*temp).word_count - 1] == line_num) return; /*if the line already appeared*/
+        if((*temp).line_appears[(*temp).word_count - 1] == line_num) return 1; /*if the line already appeared*/
 
         (*temp).word_count++;
         temp->line_appears = (int *) realloc(temp->line_appears,(*temp).word_count*sizeof(int));
-        if(temp->line_appears == NULL) print_error_alloc(); /* if the allocation failed, ABORT*/
+        if(temp->line_appears == NULL) return 0; /* if the allocation failed, ABORT*/
         temp->line_appears[(*temp).word_count - 1] = line_num;
     }
-    return;
+    return 1;
 }
 
 void trie_travel(Trie trie, void (*print_func)(data *ptr),data * ptr) {
@@ -136,7 +135,7 @@ void trie_full_delete(Trie * trie) {
 static trie_node *trie_exists_sub(trie_node * node_i,const char * str) {
     while(node_i) {
         if(*str == '\0') {
-            if((*node_i).string_data.word_str != NULL) {
+            if((*node_i).string_data.sym_str != NULL) {
                 return node_i;
             }
             return NULL;
@@ -149,7 +148,7 @@ static trie_node *trie_exists_sub(trie_node * node_i,const char * str) {
 
 static void trie_travel_internal(trie_node *node,void (*print_func)(data *ptr),data * ptr)  {
     int i;
-    if((*node).string_data.word_str != NULL) {
+    if((*node).string_data.sym_str != NULL) {
         print_func(&(*node).string_data);
     }
     for(i = 0 ; i < ALPHABET_SIZE ; i++) {
@@ -177,16 +176,12 @@ prints the */
 void my_print_func(data *ptr) {
     int i;
     int num,*arr_num;
-    char c,*aux_str;
+    char c,aux_str[6];
 
     /*assigning the struct members to local variables for better visibility*/
-    char *word = (*ptr).word_str;
+    char *word = (*ptr).sym_str;
     num = (*ptr).word_count;
     arr_num = (*ptr).line_appears;
-    aux_str = (char *) malloc(6); /* assisting to print either 'line' or 'lines', 
-    depending on how many appearances the word has */
-    
-    if(aux_str == NULL) print_error_alloc(); /* if the allocation failed, ABORT*/
 
     if(num > 1) strcpy(aux_str,"lines");
     else        strcpy(aux_str,"line");
@@ -198,7 +193,6 @@ void my_print_func(data *ptr) {
         c = (i == num-1) ? '\n' : ',';
         printf("%d%c",arr_num[i],c);
     }
-
-    free(aux_str);
+    
     return;
 }
