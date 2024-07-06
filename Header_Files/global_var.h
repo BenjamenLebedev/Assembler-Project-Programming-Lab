@@ -158,7 +158,7 @@ void *symbol_ctor(const void *copy);
  * 
  * @param item Pointer to the symbol structure to be destroyed
  */
-void symbol_dtor(void *item);
+void sym_dtor(void *item);
 
 /**
  * @brief constructor function for a extern struct
@@ -168,11 +168,5 @@ void symbol_dtor(void *item);
  */
 void *extern_ctor(const void *copy);
 
-/**
- * @brief destructor function for a extern
- * 
- * @param item Pointer to the extern structure to be destroyed
- */
-void extern_dtor(void *item);
 
 #endif
