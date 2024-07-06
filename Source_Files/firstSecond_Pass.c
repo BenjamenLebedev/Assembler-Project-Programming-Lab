@@ -15,10 +15,6 @@ void * symbol_ctor (const void * copy) {
     /*copy the contents of the provided symbol*/
     return memcpy(new_p,copy,sizeof(struct symbol));
 } 
-/*delete function for vector  */
-void symbol_dtor(void * item){
-    free(item);
-}
 
 void * extern_ctor (const void * copy) {
     /*allocate memory for a new extern structure*/
@@ -28,8 +24,9 @@ void * extern_ctor (const void * copy) {
     /*copy the contents of the provided extern*/
     return memcpy(new_p,copy,sizeof(struct ext));
 }
+
 /*delete function for vector  */
-void extern_dtor(void * item){
+void sym_dtor(void * item){
     free(item);
 }
 
