@@ -32,9 +32,8 @@ void sym_dtor(void * item){
 
 struct symbol * init_symbol(struct symbol *symbol){
     symbol = (struct symbol *) malloc(sizeof(struct symbol));
-    if(symbol == NULL){
-        return symbol;
-    }
+    if(symbol == NULL) return NULL;
+
     symbol->address = 0;
     strcpy(symbol->symName,"\0");
     symbol->len_data = 0;
@@ -45,41 +44,31 @@ struct symbol * init_symbol(struct symbol *symbol){
     return symbol;
 }
 
-struct symbol * does_symbol_exist(struct vector * symbol_vector, char * name){
+void *does_sym_exist(void *sym, char * name, symFlag flag){
+    void *const *begin;
+    void *const *end;
     struct symbol * symbol_pointer;
-    void *const *begin;
-    void *const *end;
-    /*iterate through the symbols vec*/
-    VECTOR_LOOP(begin, end, symbol_vector) {
+    struct ext    * extern_pointer;
+
+    VECTOR_LOOP(begin, end, (Vector) sym) {
         if(*begin){
-            symbol_pointer = (struct symbol *) *begin;
-            /*if the symbol name matches the provided name*/
-            if(strcmp(symbol_pointer->symName, name) == 0){
-                return symbol_pointer;
+            if(flag == NON_EXTERN){
+                symbol_pointer = (struct symbol *) *begin;
+                if(strcmp(symbol_pointer->symName, name) == 0){
+                    return symbol_pointer;
+                }
+            
+            }
+            else if(flag == EXTERN){
+                extern_pointer = (struct ext *) *begin;
+                if(strcmp(extern_pointer->ext_name, name) == 0){
+                    return extern_pointer;
+                }
             }
         } 
     }
     return NULL;
 }
-
-
-struct ext * does_extern_exist(struct vector * extern_vector, char * name){
-    struct ext * extern_pointer;
-    void *const *begin;
-    void *const *end;
-    /*iterate through the symbols vec*/
-    VECTOR_LOOP(begin, end, extern_vector) {
-        if(*begin) {
-            extern_pointer = (struct ext *) *begin;
-            /*if the symbol name matches the provided name*/
-            if(strcmp(extern_pointer->ext_name, name) == 0){
-                return extern_pointer;
-            }
-        } 
-    }
-    return NULL;
-}
-
 
 /***********************************************************************************************************************/
 
@@ -144,7 +133,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         if (strlen(ast->label_of_line) > 0 && (ast->typeofLine == inst ||
             (ast->typeofLine == dir && (ast->operation_code.dir_code == dir_data || ast->operation_code.dir_code == dir_string)))) {
             /*check to see if label all ready exists*/
-            find_symbol = does_symbol_exist(translation_unit->symbols, ast->label_of_line);
+            find_symbol = (struct symbol *) does_sym_exist(translation_unit->symbols, ast->label_of_line, NON_EXTERN);
             if (find_symbol) { /*is symbol exists*/
                 /*change type of symbol accordingly*/
                 if (find_symbol->symType == entrySymbol) {
@@ -230,7 +219,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         dir_type = ast->operation_code.dir_code;
         if (ast->typeofLine == dir && ((dir_type == dir_entry) || (dir_type == dir_extern))) {
             /*find if symbol all ready exists*/
-            find_symbol = does_symbol_exist(translation_unit->symbols, DIR_OP_DATA(ast,0).data_option.label);
+            find_symbol = (struct symbol *) does_sym_exist(translation_unit->symbols, DIR_OP_DATA(ast,0).data_option.label, NON_EXTERN);
             if ((find_symbol != NULL) && (dir_type == dir_entry)) {
                 /*if symbol found update symbol type if symbol wasn't all ready defined as extern or entry,or used in .define directive*/
                 if (find_symbol->symType == dataSymbol && find_symbol->is_symbol_define == FALSE) {
@@ -266,7 +255,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         /*if line is of type define */
         }else if(ast->typeofLine == define){
             /*check to see if symbol all ready exists*/
-            find_symbol = does_symbol_exist(translation_unit->symbols,  DIR_OP_DATA(ast,0).data_option.label);
+            find_symbol = (struct symbol *) does_sym_exist(translation_unit->symbols, DIR_OP_DATA(ast,0).data_option.label, NON_EXTERN);
             if(find_symbol){
                 /*is symbol all ready exists then it has to be a redefinition error*/
                 if(find_symbol->is_symbol_define == TRUE){
@@ -346,7 +335,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
                 }
                 /*if data is label data*/
                 else if(DIR_OP_DATA(ast,i).type_data == label_data){
-                    find_symbol = does_symbol_exist(translation_unit->symbols, DIR_OP_DATA(ast,i).data_option.label);
+                    find_symbol = (struct symbol *) does_sym_exist(translation_unit->symbols, DIR_OP_DATA(ast,i).data_option.label, NON_EXTERN);
                     if(find_symbol){
                         if(find_symbol->is_symbol_define == TRUE){
                             if(line_counter < find_symbol->num_line_defined && find_symbol->num_line_defined != -1){
@@ -430,7 +419,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
             /*check for errors*/
             for(i=0; i<2; i++){
                 if(ast->operands.inst_ops[i].address_of_op == label){
-                    find_symbol = does_symbol_exist(translation_unit->symbols,INST_OP_DATA(ast,i).data_option.label);
+                    find_symbol = (struct symbol *) does_sym_exist(translation_unit->symbols, INST_OP_DATA(ast,i).data_option.label, NON_EXTERN);
                     if(!find_symbol){
                         printf("********* error in file: %s line %d: %s\n    symbol %s is used but was never defined\n", amFileName, line_counter, line, INST_OP_DATA(ast,i).data_option.label);
                         error_flag = 1;
@@ -499,7 +488,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
                         translation_unit->IC++;
                     }  
                     if(ast->operands.inst_ops[i].address_of_op == label || ast->operands.inst_ops[i].address_of_op == label_offset ){
-                        find_symbol = does_symbol_exist(translation_unit->symbols, INST_OP_DATA(ast,i).data_option.label);
+                        find_symbol = (struct symbol *) does_sym_exist(translation_unit->symbols, INST_OP_DATA(ast,i).data_option.label, NON_EXTERN);
                         if(find_symbol){
                             
                             if(find_symbol->symType != externSymbol){
@@ -511,7 +500,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
                                 add_to_code_image(translation_unit,0);
                                 translation_unit->code_image[translation_unit->IC] |= 1;
                                 /* translation_unit->IC++; */
-                                find_extern = does_extern_exist(translation_unit->externals,find_symbol->symName); 
+                                find_extern = (struct ext *) does_sym_exist(translation_unit->externals,find_symbol->symName, EXTERN);
 
                                 /*if extern already exists in externals vec */
                                 if(find_extern){
@@ -546,7 +535,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
                                 /*end checking errors*/
 
                                 if(INST_OP_DATA(ast,i).offset.label != NULL){
-                                    find_symbol = does_symbol_exist(translation_unit->symbols, INST_OP_DATA(ast,i).offset.label);
+                                    find_symbol = (struct symbol *) does_sym_exist(translation_unit->symbols, INST_OP_DATA(ast,i).offset.label, NON_EXTERN);
                                     if(find_symbol){
                                         if(find_symbol->is_symbol_define == FALSE){
                                             printf("********* error in file: %s line %d: %s\n    offset value %s must be defined using .define directive\n", amFileName, line_counter, line, find_symbol->symName);
@@ -591,7 +580,7 @@ int secondPass(struct translation_unit *translation_unit, char *amFileName, FILE
                         if(INST_OP_DATA(ast,i).type_data == int_data)
                             add_to_code_image(translation_unit,INST_OP_DATA(ast,i).data_option.num << 2);
                         else if(INST_OP_DATA(ast,i).type_data == label_data){
-                            find_symbol = does_symbol_exist(translation_unit->symbols, INST_OP_DATA(ast,i).data_option.label);
+                            find_symbol = (struct symbol *) does_sym_exist(translation_unit->symbols, INST_OP_DATA(ast,i).data_option.label, NON_EXTERN);
                             add_to_code_image(translation_unit,find_symbol->address << 2);
                         }
                         translation_unit->IC++;

@@ -14,6 +14,11 @@ enum {
     TRUE
 };
 
+typedef enum symFlag{ 
+        NON_EXTERN,
+        EXTERN
+} symFlag;
+
 /*structure to save the number of allowed arguments for
 each instruction operation*/
 typedef struct op_args {

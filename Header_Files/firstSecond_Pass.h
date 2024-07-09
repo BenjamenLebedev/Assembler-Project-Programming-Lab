@@ -5,6 +5,8 @@
 #include "global_var.h" 
 #include "t_unit.h"
 
+
+
 typedef enum symType{ 
         entrySymbol,
         externSymbol, 
@@ -12,7 +14,7 @@ typedef enum symType{
         dataSymbol,
         entryCodeSymbol,
         entryDataSymbol 
-} symType; 
+} symType;
 
 struct symbol{      /* a label *//* hello: , x: ... or variable name like in define directive*/
     int is_symbol_define; /*is the symbol part of .define symbol = num*/
@@ -40,23 +42,14 @@ struct ext{
 struct symbol * init_symbol(struct symbol *symbol);
 
 /**
- * @brief checks if a symbol exists in the symbol vector
+ * @brief checks if a symbol exists in the symbol/extern vector
  * 
  * @param symbol_vector pointer to the vector of symbols
  * @param name pointer to the name of the symbol we want to search for
- * @return struct symbol* pointer to the symbol if found, else returns NULL
+ * @param flag flag to indicate the type of symbol we are looking for - whether it is an external symbol or non external symbol
+ * @return void* pointer to the symbol if found, else returns NULL
  */
-struct symbol *does_symbol_exist(struct vector *symbol_vector, char *name);
-
-/**
- * @brief checks if a extern exists in the extern vector
- * 
- * @param symbol_vector pointer to the vector of externs
- * @param name pointer to the name of the extern we want to search for
- * @return struct symbol* pointer to the extern if found, else returns NULL
- */
-struct ext *does_extern_exist(struct vector *extern_vector, char *name);
-
+void *does_sym_exist(void *sym, char * name, symFlag flag);
 
 /**
  * @brief adds an array of integers to the data image in the translation unit
