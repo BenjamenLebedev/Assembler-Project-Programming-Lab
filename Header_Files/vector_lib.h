@@ -1,6 +1,5 @@
-#ifndef __VECTOR_LIB_H
-#define __VECTOR_LIB_H
-
+#ifndef VECTOR_LIB_H
+#define VECTOR_LIB_H
 
 struct vector {
     void ** items; /*pointer to array of items*/
@@ -68,6 +67,6 @@ void vector_destroy(Vector * v);
  * @brief macro looping through the vector.
  * 
  */
-#define VECTOR_LOOP(begin,end,v) for(begin   = vector_begin(v),end= vector_end(v);begin <= end;begin++)
+#define VECTOR_LOOP(begin,end,v) for(begin = vector_begin(v),end= vector_end(v);begin <= end;begin++)
 
 #endif

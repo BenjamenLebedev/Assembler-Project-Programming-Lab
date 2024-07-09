@@ -56,9 +56,9 @@ void trie_delete(Trie trie,const char *str,int line_num) {
     find_node = trie_exists_sub(trie->children[(*str) - TRIE_START_CHAR],str+1);
     if(find_node){ /* if the string was found in the trie, then it's data is erased to make
                       it an ordinary node and not a one representing a valid string */
-        (*find_node).string_data.sym_str = NULL;
-        (*find_node).string_data.word_count--;
-        (*find_node).string_data.line_appears = NULL;
+        (*find_node).symbol_data.symbol_name = NULL;
+        (*find_node).symbol_data.word_count--;
+        (*find_node).symbol_data.line_appears = NULL;
     } 
 
     return;
@@ -74,18 +74,18 @@ char* trie_check_exists(Trie trie,const char *str,int line_num) {
     if(find_node != NULL){
         trie_update_node(&find_node,str,line_num);
     }
-    return find_node == NULL ? NULL : (*find_node).string_data.sym_str;
+    return find_node == NULL ? NULL : (*find_node).symbol_data.symbol_name;
 }
 
 int trie_update_node(trie_node **node,const char *str,int line_num){
     data *temp;
-    temp = &(*node)->string_data;
+    temp = &(*node)->symbol_data;
 
     /* if the node is not representing a valid string, then update it with all the fields in it*/
-    if((*temp).sym_str == NULL){ 
-        (*temp).sym_str = (char *) calloc(strlen(str)+1,sizeof(char));
-        if((*temp).sym_str == NULL) return 0; /* if the allocation failed, ABORT*/
-        strcpy((*temp).sym_str,(char*) str);
+    if((*temp).symbol_name == NULL){ 
+        (*temp).symbol_name = (char *) calloc(strlen(str)+1,sizeof(char));
+        if((*temp).symbol_name == NULL) return 0; /* if the allocation failed, ABORT*/
+        strcpy((*temp).symbol_name,(char*) str);
 
         (*temp).word_count++;
         (*temp).line_appears = (int *) calloc((*temp).word_count,sizeof(int));
@@ -135,7 +135,7 @@ void trie_full_delete(Trie * trie) {
 static trie_node *trie_exists_sub(trie_node * node_i,const char * str) {
     while(node_i) {
         if(*str == '\0') {
-            if((*node_i).string_data.sym_str != NULL) {
+            if((*node_i).symbol_data.symbol_name != NULL) {
                 return node_i;
             }
             return NULL;
@@ -148,8 +148,8 @@ static trie_node *trie_exists_sub(trie_node * node_i,const char * str) {
 
 static void trie_travel_internal(trie_node *node,void (*print_func)(data *ptr),data * ptr)  {
     int i;
-    if((*node).string_data.sym_str != NULL) {
-        print_func(&(*node).string_data);
+    if((*node).symbol_data.symbol_name != NULL) {
+        print_func(&(*node).symbol_data);
     }
     for(i = 0 ; i < ALPHABET_SIZE ; i++) {
         if(node->children[i]) {
@@ -179,7 +179,7 @@ void my_print_func(data *ptr) {
     char c,aux_str[6];
 
     /*assigning the struct members to local variables for better visibility*/
-    char *word = (*ptr).sym_str;
+    char *word = (*ptr).symbol_name;
     num = (*ptr).word_count;
     arr_num = (*ptr).line_appears;
 

@@ -1,19 +1,22 @@
+/* The library to implement a trie structure to search for strings and print their occurences*/
 #ifndef TRIE_H
 #define TRIE_H
 
-/* The library to implement a trie structure to search for strings and print their occurences*/
+#include "../Header_Files/global_var.h"
 
-#define TRIE_START_CHAR ' ' /* the start character from which we count the children of each node */
-#define ALPHABET_SIZE 95 // the size of the alphabet in ascii from ' ' to '~'
+#define TRIE_START_CHAR ' ' // the start character from which we count the children of each node
+#define ALPHABET_SIZE 95    // the size of the alphabet in ascii from ' ' to '~'
 
 typedef struct data_of_string {
-    char *sym_str; /* a string that is null if the node does not represent a valid string*/
+    char *symbol_name; /* a string that is null if the node does not represent a valid string*/
+    symFlag sym_flag; /* the flag of the symbol */
+    
     int word_count; /* the number of appearances of the word - with each line considered as one appearance */
-    int *line_appears; /* the line numbers at which sym_str appears */
+    int *line_appears; /* the line numbers at which symbol_name appears */
 } data;
 
 typedef struct trie_node {
-    data string_data;
+    data symbol_data;
     struct trie_node * children[ALPHABET_SIZE]; /* representing all possible ascii characters*/
 } trie_node;
 
@@ -88,4 +91,4 @@ void trie_full_delete(Trie * trie);
 /* the printing function for the trie - the st */
 void my_print_func(data *ptr);
 
-#endif
+#endif 
