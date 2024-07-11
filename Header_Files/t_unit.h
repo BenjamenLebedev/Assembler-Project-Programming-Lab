@@ -13,7 +13,7 @@ struct translation_unit {
     int entry_use; /*flag to indicate whether there are entry symbols*/
 };
  
-// hello
+
 /**
  * @brief creates a new translation unit.
  * 
