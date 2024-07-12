@@ -6,9 +6,9 @@ struct translation_unit {
     int *data_image;
     int IC; /* Instruction Counter */
     int DC; /* Data Counter */
-    struct vector *symbols; /*Vector that stores the entry symbols*/
-    struct vector *externals; /*Vector that stores the external symbols and the addresses at which each symbol is used*/
-    
+    Vector symbols; /*Vector that stores the entry symbols*/
+    Vector externals; /*Vector that stores the external symbols and the addresses at which each symbol is used*/
+
     int extern_use; /*flag to indicate whether an external symbol is used in current file*/
     int entry_use; /*flag to indicate whether there are entry symbols*/
 };
