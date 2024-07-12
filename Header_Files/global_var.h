@@ -15,7 +15,7 @@ enum {
 };
 
 typedef enum symFlag{ 
-        NON_EXTERN,
+        NON_EXTERN = 1,
         EXTERN
 } symFlag;
 
@@ -148,7 +148,6 @@ int is_dir(char* str);
  * @return An integer. 1 if the string is empty. 0 otherwise.
  */
 int isEmptyString(char* str);
-
 
 /**
  * @brief constructor function for a symbol struct
