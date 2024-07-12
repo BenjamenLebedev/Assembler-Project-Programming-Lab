@@ -8,9 +8,12 @@
 #define ALPHABET_SIZE 95    // the size of the alphabet in ascii from ' ' to '~'
 
 typedef struct data_of_string {
-    char *symbol_name; /* a string that is null if the node does not represent a valid string*/
-    symFlag sym_flag; /* the flag of the symbol */
-    
+    char *symbol_name; /* name of symbol - null if the node does not represent a symbol name*/
+    symFlag sym_flag; /* the flag of the symbol - extern or not*/
+    union{
+        struct ext * ext_ptr; /* pointer to the external symbol */
+        struct symbol * symbol_ptr; /* pointer to the symbol */
+    } sym_ptr;
     int word_count; /* the number of appearances of the word - with each line considered as one appearance */
     int *line_appears; /* the line numbers at which symbol_name appears */
 } data;
