@@ -46,6 +46,12 @@ int main(int argc, char *argv[]) {
         }
         
         translation_unit = create_translation_unit();
+        if(!translation_unit){
+            printf("***** Error: Memory allocation error\n");
+            printf("***** Assembly process failed for file %s. \n", argv[i]);
+            free(amFileName);
+            exit(1);
+        }
 
         amFile = fopen(amFileName, "r");
         if(!amFile){
@@ -56,11 +62,11 @@ int main(int argc, char *argv[]) {
         }
         else{
 
-            if(!firstPass(translation_unit, amFileName, amFile)){ 
+            if(!firstPass(translation_unit, amFileName, amFile)){
                 
                 rewind(amFile); 
 
-                if(!secondPass(translation_unit, amFileName, amFile)){ 
+                if(!secondPass(translation_unit, amFileName, amFile)){
 
                     if(!gen_output_files(translation_unit,argv[i])){
                         printf("-----  Assembly of file: %s  finished successfully! \n\n\n", argv[i]);
