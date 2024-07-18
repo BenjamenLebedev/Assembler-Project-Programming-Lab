@@ -52,7 +52,7 @@ void *does_sym_exist(void *sym, char * name, symFlag flag){
 
     VECTOR_LOOP(begin, end, (Vector) sym) {
         if(*begin){
-            if(flag == NON_EXTERN){
+            if(flag == NON_EXTERN || flag == DEFINE){
                 symbol_pointer = (struct symbol *) *begin;
                 if(strcmp(symbol_pointer->symName, name) == 0){
                     return symbol_pointer;
@@ -269,8 +269,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
             else{
                 strcpy(symbol->symName, DIR_OP_DATA(ast,0).data_option.label);
                 symbol->symType = dataSymbol;
-                symbol->address = DIR_OP_DATA(ast,1).data_option.num;
-                symbol->define_val = DIR_OP_DATA(ast,1).data_option.num;
+                symbol->address = symbol->define_val = DIR_OP_DATA(ast,1).data_option.num;
                 symbol->is_symbol_define = TRUE;
                 symbol->num_line_defined = line_counter;
                 vector_insert(translation_unit->symbols, symbol);
@@ -289,6 +288,7 @@ int firstPass(struct translation_unit *translation_unit, char *amFileName, FILE 
         if (*begin) {
             symbol = (struct symbol *) *begin;
 
+            /* the definition of the entry symbol is empty (neither part of instruction or directive) but never used */
             if (symbol->symType == entrySymbol && symbol->is_symbol_define == FALSE) {
                 printf("********* error: in file: %s line %d: %s\n    symbol %s was declared as entry symbol but was not defined\n", amFileName, line_counter, line, symbol->symName);
                 is_error = TRUE;
