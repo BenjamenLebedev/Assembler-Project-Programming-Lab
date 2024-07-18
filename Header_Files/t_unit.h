@@ -1,6 +1,8 @@
 #ifndef T_UNIT_H
 #define T_UNIT_H
 
+#include "trie.h"
+
 struct translation_unit { 
     int *code_image;
     int *data_image;
@@ -8,7 +10,7 @@ struct translation_unit {
     int DC; /* Data Counter */
     Vector symbols; /*Vector that stores the entry symbols*/
     Vector externals; /*Vector that stores the external symbols and the addresses at which each symbol is used*/
-
+    Trie t; /*Trie structure that stores names of the symbols and the pointers to the respective Vector structures*/
     int extern_use; /*flag to indicate whether an external symbol is used in current file*/
     int entry_use; /*flag to indicate whether there are entry symbols*/
 };

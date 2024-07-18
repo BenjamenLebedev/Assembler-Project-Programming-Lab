@@ -18,6 +18,11 @@ struct translation_unit *create_translation_unit() {
         unit->data_image = NULL;
         unit->symbols = new_vector(symbol_ctor, sym_dtor);
         unit->externals = new_vector(extern_ctor, sym_dtor);
+        unit->t = create_trie();
+        if(unit->t == NULL || unit->symbols == NULL || unit->externals == NULL) {
+            printf("********** error: Memory allocation failed for translation unit.\n");
+            return NULL;
+        }
         unit->extern_use = FALSE;
         unit->entry_use = FALSE;
     }
