@@ -4,8 +4,9 @@
 #include "../Header_Files/vector_lib.h"
 #include "../Header_Files/firstSecond_Pass.h"
 #include "../Header_Files/t_unit.h"
-#include "../Header_Files/code_convert.h" 
+#include "../Header_Files/code_convert.h"
 #include "../Header_Files/macro_spread.h"
+#include "../Header_Files/trie.h"
 
 int mains(int argc, char *argv[]){
 

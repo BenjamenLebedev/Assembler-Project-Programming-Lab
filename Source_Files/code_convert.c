@@ -198,6 +198,7 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
             if(is_error){
                 printf("********** error: memory allocation error during sorting of entry symbols vector\n");
                 free_translation_unit(translation_unit);
+                free(file_ent_name);
                 fclose(file_ent);
                 exit(1);
             }
@@ -206,7 +207,7 @@ int make_entries_file(struct translation_unit *translation_unit, char *FileName)
     if(file_ent && !is_error){
         VECTOR_LOOP(begin, end, translation_unit->symbols) {
             if (*begin) {
-                entrie = (struct symbol *) *begin;   
+                entrie = (struct symbol *) *begin;
                 if(entrie->symType == entryDataSymbol || entrie->symType == entryCodeSymbol ){
                     fprintf(file_ent, "%s\t0%d\n", entrie->symName, entrie->address);
                 }
