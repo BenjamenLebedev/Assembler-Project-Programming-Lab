@@ -16,7 +16,8 @@ enum {
 
 typedef enum symFlag{ 
         NON_EXTERN = 1,
-        EXTERN
+        EXTERN,
+        DEFINE
 } symFlag;
 
 /*structure to save the number of allowed arguments for
