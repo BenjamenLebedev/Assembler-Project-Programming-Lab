@@ -9,21 +9,20 @@ static void trie_destroy_sub(struct trie_node * node_i);
 /*checking for each node in the trie if the str exists in the structure.*/
 static trie_node *trie_exists_sub(struct trie_node * node_i,const char * str);
 /* traveling through the trie tree and calling the print_func for each word in the tree */
-static void trie_travel_internal(trie_node *node,void (*print_func)(data *ptr),data * ptr);
+static void trie_travel_internal(trie_node *node,void (*print_func)(data_trie *ptr),data_trie * ptr);
 
 /****************************************************************************************************************/
 /**************************************Core functions of the Trie structure**************************************/
 /****************************************************************************************************************/
 
 // handling memory allocation errors is done outside this function.
-Trie trie() {
+Trie create_trie() {
     return (Trie) calloc(1,sizeof(struct trie));
 }
 
 const char *trie_insert(Trie trie,const char *str,int line_num) {
     const char * temp = str;
     trie_node **node_ptr;
-    char *alloc_err = "memory allocation error";
 
     // if the string is empty or it's NULL, there's no point in inserting it into the trie
     if(!str || *str == '\0' || isEmptyString((char*) str)) return NULL;
@@ -34,7 +33,7 @@ const char *trie_insert(Trie trie,const char *str,int line_num) {
             (*node_ptr) = (trie_node *) calloc(1,sizeof(struct trie_node));
             if(*node_ptr == NULL){
                 trie_full_delete(&trie); /* if the allocation failed, ABORT*/
-                return alloc_err;
+                return "memory allocation error";
             }
         }
         str++;
@@ -56,6 +55,7 @@ void trie_delete(Trie trie,const char *str,int line_num) {
     find_node = trie_exists_sub(trie->children[(*str) - TRIE_START_CHAR],str+1);
     if(find_node){ /* if the string was found in the trie, then it's data is erased to make
                       it an ordinary node and not a one representing a valid string */
+        free((*find_node).symbol_data.symbol_name);
         (*find_node).symbol_data.symbol_name = NULL;
         (*find_node).symbol_data.word_count--;
         (*find_node).symbol_data.line_appears = NULL;
@@ -78,33 +78,26 @@ char* trie_check_exists(Trie trie,const char *str,int line_num) {
 }
 
 int trie_update_node(trie_node **node,const char *str,int line_num){
-    data *temp;
+    data_trie *temp;
     temp = &(*node)->symbol_data;
 
     /* if the node is not representing a valid string, then update it with all the fields in it*/
-    if((*temp).symbol_name == NULL){ 
+    if((*temp).symbol_name == NULL){
         (*temp).symbol_name = (char *) calloc(strlen(str)+1,sizeof(char));
         if((*temp).symbol_name == NULL) return 0; /* if the allocation failed, ABORT*/
         strcpy((*temp).symbol_name,(char*) str);
 
-        (*temp).word_count++;
-        (*temp).line_appears = (int *) calloc((*temp).word_count,sizeof(int));
-        if((*temp).line_appears == NULL) return 0; /* if the allocation failed, ABORT*/
-        (*temp).line_appears[(*temp).word_count - 1] = line_num;
+        (*temp).ext_count++;
     }
     /* if the node is already representing a valid string, then only update if it appears in a different line then before*/
     else{
-        if((*temp).line_appears[(*temp).word_count - 1] == line_num) return 1; /*if the line already appeared*/
 
         (*temp).word_count++;
-        temp->line_appears = (int *) realloc(temp->line_appears,(*temp).word_count*sizeof(int));
-        if(temp->line_appears == NULL) return 0; /* if the allocation failed, ABORT*/
-        temp->line_appears[(*temp).word_count - 1] = line_num;
     }
     return 1;
 }
 
-void trie_travel(Trie trie, void (*print_func)(data *ptr),data * ptr) {
+void trie_travel(Trie trie, void (*print_func)(data_trie *ptr),data_trie * ptr) {
     int i;
     for(i = 0 ; i < ALPHABET_SIZE ; i++) {
         if(trie->children[i]) {
@@ -146,7 +139,7 @@ static trie_node *trie_exists_sub(trie_node * node_i,const char * str) {
     return NULL;
 }
 
-static void trie_travel_internal(trie_node *node,void (*print_func)(data *ptr),data * ptr)  {
+static void trie_travel_internal(trie_node *node,void (*print_func)(data_trie *ptr),data_trie * ptr)  {
     int i;
     if((*node).symbol_data.symbol_name != NULL) {
         print_func(&(*node).symbol_data);
@@ -173,12 +166,13 @@ static void trie_destroy_sub(struct trie_node * node_i) {
 
 /*the function that prints the content of the trie node (presented as ptr)
 prints the */
-void my_print_func(data *ptr) {
+/*
+void my_print_func(data_trie *ptr) {
     int i;
     int num,*arr_num;
     char c,aux_str[6];
 
-    /*assigning the struct members to local variables for better visibility*/
+    // assigning the struct members to local variables for better visibility
     char *word = (*ptr).symbol_name;
     num = (*ptr).word_count;
     arr_num = (*ptr).line_appears;
@@ -188,7 +182,7 @@ void my_print_func(data *ptr) {
 
     printf("%-7s appears in %s ",word,aux_str);
     for(i = 0 ; i < num ; i++) {
-        /* if the line number is the same as the previous one, don't print it because we only need to show in which line it appeared*/
+        // if the line number is the same as the previous one, don't print it because we only need to show in which line it appeared
         if(i > 0 && arr_num[i] == arr_num[i-1]) continue;
         c = (i == num-1) ? '\n' : ',';
         printf("%d%c",arr_num[i],c);
@@ -196,3 +190,4 @@ void my_print_func(data *ptr) {
     
     return;
 }
+*/
